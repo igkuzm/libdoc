@@ -1,0 +1,3 @@
+[submodule "ms-cfb"]
+	path = ms-cfb
+	url = git@github.com:igkuzm/ms-cfb
