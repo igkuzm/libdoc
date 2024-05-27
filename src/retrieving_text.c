@@ -2,10 +2,10 @@
  * File              : retrieving_text.c
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 26.05.2024
- * Last Modified Date: 26.05.2024
+ * Last Modified Date: 27.05.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
  */
-#include "../include/libdoc/doc.h"
+#include "../include/libdoc/retrieving_text.h"
 
 void get_char_for_cp(cfb_doc_t *doc, CP cp,
 		void *user_data,
