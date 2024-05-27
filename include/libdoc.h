@@ -31,6 +31,35 @@
 extern "C"{
 #endif
 
+#include "libdoc/doc.h"
+
+#define INLINE_PICTURE		 0x0001 //
+#define FLOATING_PICTURE	 0x0008 //
+#define FOOTNOTE_MARK			 0x0002 // - footnote mark
+#define FOOTNOTE_MARK			 0x0002 // - footnote mark
+#define CELL_MARK			     0x0007 // - table separator
+#define HORIZONTALTAB			 0x0009 // - Horizontal tab
+#define LINEBREAK			     0x000B // - hard return
+#define PAGEBREAK			     0x000C // - page break
+#define PARAGRAPH_MARK		 0x000D // - marks an end of paragraph
+#define HYPHEN			       0x001E // (-) separates the chapter number and caption number
+														      // IS2 for some reason means short defis in Word
+#define PERIOD			       0x002E // (.) separates the chapter number and the caption number
+#define COLON			         0x003A // (:) separates the chapter number and the caption number
+#define EN_DASH			       0x2013 // (–) separates the chapter number and the caption number
+#define EM_DASH			       0x2014 // (–) separates the chapter number and the caption number
+#define SOFT_HYPEN			   0x001F // - soft hyphen in Word
+#define HYPERLINK_START		 0x0013 // - start embedded hyperlink
+#define HYPERLINK_SEPARATE 0x0014 // - separate hyperlink URL from text
+#define HYPERLINK_END			 0x0015 // - end embedded hyperlink
+
+/* open MS-DOC file and run callbacks for characters in 
+ * main document, footnotes and headers */
+int doc_parse(const char *filename, void *user_data,
+		int (*main_document)(void *user_data, int ch),
+		int (*footnotes)(void *user_data, int ch),
+		int (*headers)(void *user_data, int ch));
+
 #ifdef __cplusplus
 }
 #endif

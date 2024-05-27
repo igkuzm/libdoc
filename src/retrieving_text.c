@@ -75,13 +75,13 @@ void get_char_for_cp(cfb_doc_t *doc, CP cp,
 		WORD u;
 		fread(&u, 2, 1, doc->WordDocument);
 		if (doc->biteOrder){
-			u = bo_16_sw(u);
+			u = bswap_16(u);
 		}
 		char utf8[4]={0};
 		//sprintf(utf8, "0x%x ", u);
 		_utf16_to_utf8(&u, 1, utf8);
 		if (doc->biteOrder){
-				u = bo_16_sw(u);
+				u = bswap_16(u);
 			}
 			if (u < 0x010){
 				// first byte in uint16 is 00

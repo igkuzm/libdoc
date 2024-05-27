@@ -2,7 +2,7 @@
  * File              : doc.h
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 04.11.2022
- * Last Modified Date: 26.05.2024
+ * Last Modified Date: 27.05.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
  */
 
@@ -2650,7 +2650,7 @@ static struct PlcBtePapx * plcbtePapx_get(
 	return plcbtePapx;
 }
 
-static void plcbtePapx_free(PlcBtePapx *p){
+static void plcbtePapx_free(struct PlcBtePapx *p){
 	if (p){
 		if (p->aFc)
 			free(p->aFc);
@@ -2787,7 +2787,7 @@ static struct PapxFkp * papxFkp_get(
 	s->rgbx = &(((uint8_t *)p)[*s->cpara + 1]);
 	return s;
 }
-static void papxFkp_free(PapxFkp *p)
+static void papxFkp_free(struct PapxFkp *p)
 {
 	if (p){
 		if (p->rgfc)
