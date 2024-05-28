@@ -2,17 +2,19 @@
  * File              : doc2txt.c
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 27.05.2024
- * Last Modified Date: 27.05.2024
+ * Last Modified Date: 28.05.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
  */
 
+#include <stdio.h>
 #include "../include/libdoc.h"
+#include "../ms-cfb/log.h"
 
 /* read MS-DOC and print it's content */
 
-int main_document(void *, int);
-int footnotes(void *, int);
-int headers(void *, int);
+int main_document(void *, ldp_t*, int);
+int footnotes(void *, ldp_t*, int);
+int headers(void *, ldp_t*, int);
 
 int main(int argc, char *argv[])
 {
@@ -21,15 +23,22 @@ int main(int argc, char *argv[])
 		return 0;
 	}	
 
-	return doc_parse(
+	int ret = doc_parse(
 			argv[1], 
 			NULL, 
 			main_document,
 			footnotes,
 			headers);
+
+	if (ret)
+		ERR("can't parse file: %s", argv[1]);
+	return ret;
 }
 
-int main_document(void *d, int ch){
+int main_document(void *d, ldp_t *p, int ch){
+	//if (!p->chp.fBold)
+		//return 0;
+
 /* Following symbols below 32 are allowed inside paragraph:
 0x0002 - footnote mark
 0x0007 - table separator (converted to tabmode)
@@ -55,16 +64,16 @@ int main_document(void *d, int ch){
 		case 0x1F: printf("%c", 0xAD); break;
 		case 0x0B: printf("%c", 0x0A); break;
 		case 0x08: case 0x01: printf("%c", ' '); break;
-		default: break;
+		default: putchar(ch);
 	}
 
 	return 0;
 }
-int footnotes(void *d, int ch){
+int footnotes(void *d, ldp_t *p, int ch){
 
 	return 0;
 }
-int headers(void *d, int ch){
+int headers(void *d, ldp_t *p, int ch){
 
 	return 0;
 }

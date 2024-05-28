@@ -5,6 +5,6 @@
 
 void get_char_for_cp(cfb_doc_t *doc, CP cp,
 		void *user_data,
-		int (*callback)(void *user_data, int ch));
+		int (*callback)(void *user_data, ldp_t *p, int ch));
 
 #endif /* ifndef RETRIEVING_TEXT_H */

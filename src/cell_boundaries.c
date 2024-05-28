@@ -2,7 +2,7 @@
  * File              : cell_boundaries.c
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 26.05.2024
- * Last Modified Date: 26.05.2024
+ * Last Modified Date: 28.05.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
  */
 
@@ -27,5 +27,6 @@ int get_cell_depth_for_cp(cfb_doc_t *doc, CP cp)
  * determine the table depth as specified in
  * Overview of Tables. Call this itapOrig.*/
 
+	return 0;
 }
 

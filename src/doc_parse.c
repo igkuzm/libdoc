@@ -2,19 +2,26 @@
  * File              : doc_parse.c
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 26.05.2024
- * Last Modified Date: 26.05.2024
+ * Last Modified Date: 28.05.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
  */
+#include "../include/libdoc.h"
+#include "../include/libdoc/paragraph_boundaries.h"
 #include "../include/libdoc/retrieving_text.h"
+#include "../include/libdoc/direct_character_formatting.h"
+
+int callback(void *d, struct Prl *prl){
+	printf("PRL with sprm: %d \n", prl->sprm);	
+	return 0;
+}
 
 int doc_parse(const char *filename, void *user_data,
-		int (*main_document)(void *user_data, int ch),
-		int (*footnotes)(void *user_data, int ch),
-		int (*headers)(void *user_data, int ch)
-		)
+		int (*main_document)(void *user_data, ldp_t *p, int ch),
+		int (*footnotes)(void *user_data, ldp_t *p, int ch),
+		int (*headers)(void *user_data, ldp_t *p, int ch))
 {
 #ifdef DEBUG
-	LOG("start\n");
+	LOG("start");
 #endif
 	int ret, cp, i;
 
@@ -26,7 +33,7 @@ int doc_parse(const char *filename, void *user_data,
 	
 	// Read the DOC Streams
 	cfb_doc_t doc;
-	ret = _doc_init(&doc, &cfb);
+	ret = doc_read(&doc, &cfb);
 	if (ret)
 		return ret;
 
@@ -41,9 +48,20 @@ int doc_parse(const char *filename, void *user_data,
  * FibRgLw97.ccpText characters long.
  * The last character in the main document MUST be a 
  * paragraph mark (Unicode 0x000D).*/
-for (cp = 0; cp < doc.fib.rgLw97->ccpText; ++cp) {
-	get_char_for_cp(&doc, cp, user_data,
-			main_document);
+for (cp = 0; cp < doc.fib.rgLw97->ccpText; ) {
+	// get paragraph boundaries
+	CP lcp = last_cp_in_paragraph(&doc, cp); 
+
+	// set paragraph and char properties to default
+	memset(&(doc.prop.chp), 0, sizeof(CHP));
+	memset(&(doc.prop.pap), 0, sizeof(PAP));
+
+	// iterate cp
+	while (cp <= lcp){
+		get_char_for_cp(&doc, cp, user_data,
+				main_document);
+		cp++;
+	}
 }
 
 /* 2.3.2 Footnotes
@@ -88,9 +106,10 @@ for (;cp < doc.fib.rgLw97->ccpHdd; ++cp) {
 			headers);
 }
 
+doc_close(&doc);
 
 #ifdef DEBUG
-	LOG("done\n");
+	LOG("done");
 #endif
 	return 0;
 }

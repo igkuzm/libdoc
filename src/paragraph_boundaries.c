@@ -2,11 +2,12 @@
  * File              : paragraph_boundaries.c
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 26.05.2024
- * Last Modified Date: 26.05.2024
+ * Last Modified Date: 28.05.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
  */
 
-#include "../include/libdoc/doc.h"
+#include "../include/libdoc/paragraph_boundaries.h"
+#include "../include/libdoc/direct_paragraph_formatting.h"
 
 /* 2.4.2 Determining Paragraph Boundaries
  * This section specifies how to find the beginning and end 
@@ -22,8 +23,14 @@
  * position cp : */ 
 CP first_cp_in_paragraph(cfb_doc_t *doc, CP cp)
 {
+#ifdef DEBUG
+	LOG("start");
+#endif
 	CP fcp = CPERROR;
 	struct PapxFkp *papxFkp = NULL;
+	struct Pcd *pcd = NULL;
+	int k=0;
+	uint32_t of=0;
 
 /* 1. Follow the algorithm from Retrieving Text up to and 
  * including step 3 to find i. Also remember the 
@@ -40,7 +47,7 @@ CP first_cp_in_paragraph(cfb_doc_t *doc, CP cp)
 
   while(1){
 /* 2. Let pcd be PlcPcd.aPcd[i]. */
-		struct Pcd *pcd = &(plcPcd->aPcd[i]);
+		pcd = &(plcPcd->aPcd[i]);
 
 /* 3. Let fcPcd be Pcd.fc.fc. Let fc be 
  * fcPcd + 2(cp – PlcPcd.aCp[i]). If Pcd.fc.fCompressed is 
@@ -87,22 +94,21 @@ CP first_cp_in_paragraph(cfb_doc_t *doc, CP cp)
 			j++;	
 		j--;
 
-		papxFkp = papxFkp_get(
-				doc->WordDocument, 
-				pnFkpPapx_pn(
-					doc->plcbtePapx->aPnBtePapx[j]) * 512);
+		of = pnFkpPapx_pn(
+					doc->plcbtePapx->aPnBtePapx[j]) * 512;
+		papxFkp = 
+				papxFkp_get(doc->WordDocument, of);
 
 /* 6. Find the largest k such that PapxFkp.rgfc[k] ≤ fc.
  * If the last element of PapxFkp.rgfc is less
  * than or equal to fc, then cp is outside the range of
  * character positions in this document, and is
  * not valid. Let fcFirst be PapxFkp.rgfc[k].*/
-		int k;
 		for (k=0; papxFkp->rgfc[k] <= fc; )
 			k++;	
 		k--;
 		
-		if (papxFkp->rgfc[*papxFkp->cpara] <= fc){
+		if (papxFkp->rgfc[papxFkp->cpara] <= fc){
 			ERR("last element of PapxFkp.rgfc is less"
 					" than or equal to fc: cp is outside the"
 					" range of character positions in this document");
@@ -143,6 +149,9 @@ first_cp_in_paragraph_8:
 		papxFkp = NULL;
 	}
 
+#ifdef DEBUG
+	LOG("first cp in paragraph: %d", fcp);
+#endif
 	if (papxFkp)
 		free(papxFkp);
 	return fcp;
@@ -153,8 +162,14 @@ first_cp_in_paragraph_8:
  * position cp: */
 CP last_cp_in_paragraph(cfb_doc_t *doc, CP cp)
 {
+#ifdef DEBUG
+	LOG("start\n");
+#endif
 	CP lcp = CPERROR;
 	struct PapxFkp *papxFkp = NULL;
+	struct Pcd *pcd = NULL;
+	int k=0;
+	uint32_t of=0;
 
 /* 1. Follow the algorithm from Retrieving Text up to and
  * including step 3 to find i. Also remember the
@@ -172,7 +187,7 @@ CP last_cp_in_paragraph(cfb_doc_t *doc, CP cp)
 
 	while(1){
 /* 2. Let pcd be PlcPcd.aPcd[i]. */
-		struct Pcd *pcd = &(plcPcd->aPcd[i]);
+		pcd = &(plcPcd->aPcd[i]);
 
 /* 3. Let fcPcd be Pcd.fc.fc. Let fc be fcPcd + 2(cp –
  * PlcPcd.aCp[i]). Let fcMac be fcPcd +
@@ -208,23 +223,21 @@ CP last_cp_in_paragraph(cfb_doc_t *doc, CP cp)
 			goto last_cp_in_paragraph_7;
 		}
 		
-		papxFkp = papxFkp_get(
-				doc->WordDocument, 
-				pnFkpPapx_pn(
-					pnFkpPapx_pn(
-						doc->plcbtePapx->aPnBtePapx[j])) * 512);
+		of = pnFkpPapx_pn(
+						doc->plcbtePapx->aPnBtePapx[j]) * 512;
+		papxFkp = 
+			papxFkp_get(doc->WordDocument, of);
 
 /* 5. Find largest k such that PapxFkp.rgfc[k] ≤ fc. If the
  * last element of PapxFkp.rgfc is less than
  * or equal to fc, then cp is outside the range of character
  * positions in this document, and is not
  * valid. Let fcLim be PapxFkp.rgfc[k+1]. */
-		int k;
 		for (k=0; papxFkp->rgfc[k] <= fc; )
 			k++;	
 		k--;
 		
-		if (papxFkp->rgfc[*papxFkp->cpara] <= fc){
+		if (papxFkp->rgfc[papxFkp->cpara] <= fc){
 			ERR("last element of PapxFkp.rgfc is less"
 					" than or equal to fc: cp is outside the"
 					" range of character positions in this document");
@@ -254,6 +267,12 @@ last_cp_in_paragraph_7:
 			free(papxFkp);
 		papxFkp = NULL;
 	}
+
+#ifdef DEBUG
+	LOG("last cp in paragraph: %d", lcp);
+#endif
+	direct_paragraph_formatting(
+			doc, k, papxFkp, of, pcd);
 
 	if (papxFkp)
 		free(papxFkp);

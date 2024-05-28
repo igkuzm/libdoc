@@ -2,11 +2,12 @@
  * File              : doc.c
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 26.05.2024
- * Last Modified Date: 26.05.2024
+ * Last Modified Date: 28.05.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
  */
 
 #include "../include/libdoc/doc.h"
+#include <stdio.h>
 
 /* How to read the FIB
  * The Fib structure is located at offset 0 of the
@@ -47,7 +48,7 @@
  *     of FibRgCswNew into FibRgCswNew.*/
 static int _doc_fib_init(Fib *fib, FILE *fp, struct cfb *cfb){
 #ifdef DEBUG
-	LOG("start _cfb_doc_fib_init\n");
+	LOG("start");
 #endif
 
 	fib->base = NULL;
@@ -61,17 +62,13 @@ static int _doc_fib_init(Fib *fib, FILE *fp, struct cfb *cfb){
 	fib->rgCswNew = NULL;
 
 	//allocate fibbase
-#ifdef DEBUG
-	LOG("_cfb_doc_fib_init: allocate fibbase\n");
-#endif
-	
-	fib->base = (FibBase *)malloc(32);
-	if (!fib->base)
-		return DOC_ERR_ALLOC;
+	fib->base = (FibBase *)MALLOC(32,
+		ERR("malloc");
+		return DOC_ERR_ALLOC);
 
 	//read fibbase
 #ifdef DEBUG
-	LOG("_cfb_doc_fib_init: read fibbase\n");
+	LOG("read fibbase");
 #endif
 	
 	if (fread(fib->base, 32, 1, fp) != 1){
@@ -79,18 +76,18 @@ static int _doc_fib_init(Fib *fib, FILE *fp, struct cfb *cfb){
 		return DOC_ERR_FILE;
 	}
 	if (cfb->biteOrder){
-		fib->base->wIdent        = bo_16_sw(fib->base->wIdent);
-		fib->base->nFib          = bo_16_sw(fib->base->nFib);
-		fib->base->lid           = bo_16_sw(fib->base->lid);
-		fib->base->pnNext        = bo_16_sw(fib->base->pnNext);
-		fib->base->ABCDEFGHIJKLM = bo_16_sw(fib->base->ABCDEFGHIJKLM);
-		fib->base->nFibBack      = bo_16_sw(fib->base->nFibBack);
-		fib->base->lKey          = bo_32_sw(fib->base->lKey);
+		fib->base->wIdent        = bswap_16(fib->base->wIdent);
+		fib->base->nFib          = bswap_16(fib->base->nFib);
+		fib->base->lid           = bswap_16(fib->base->lid);
+		fib->base->pnNext        = bswap_16(fib->base->pnNext);
+		fib->base->ABCDEFGHIJKLM = bswap_16(fib->base->ABCDEFGHIJKLM);
+		fib->base->nFibBack      = bswap_16(fib->base->nFibBack);
+		fib->base->lKey          = bswap_32(fib->base->lKey);
 	}
 	
 	//check wIdent
 #ifdef DEBUG
-	LOG("_cfb_doc_fib_init: check wIdent: 0x%x\n", fib->base->wIdent);
+	LOG("check wIdent: 0x%x", fib->base->wIdent);
 #endif	
 	if (fib->base->wIdent != 0xA5EC){
 		free(fib->base);
@@ -98,7 +95,7 @@ static int _doc_fib_init(Fib *fib, FILE *fp, struct cfb *cfb){
 	}	
 
 #ifdef DEBUG
-	LOG("_cfb_doc_fib_init: read csw\n");
+	LOG("read csw");
 #endif	
 	//read Fib.csw
 	if (fread(&(fib->csw), 2, 1, fp) != 1){
@@ -106,31 +103,27 @@ static int _doc_fib_init(Fib *fib, FILE *fp, struct cfb *cfb){
 		return DOC_ERR_FILE;
 	}
 	if (cfb->biteOrder){
-		fib->csw = bo_16_sw(fib->csw);
+		fib->csw = bswap_16(fib->csw);
 	}
 
 	//check csw
 #ifdef DEBUG
-	LOG("_cfb_doc_fib_init: check csw: 0x%x\n", fib->csw);
+	LOG("check csw: 0x%x", fib->csw);
 #endif		
 	if (fib->csw != 14) {
 		free(fib->base);
 		return DOC_ERR_HEADER;
 	}
 
-#ifdef DEBUG
-	LOG("_cfb_doc_fib_init: allocate FibRgW97\n");
-#endif	
 	//allocate FibRgW97
-	fib->rgW97 = (FibRgW97 *)malloc(28);
-	if (!fib->rgW97){
+	fib->rgW97 = (FibRgW97 *)MALLOC(28,
+		ERR("malloc");
 		free(fib->base);
-		return DOC_ERR_ALLOC;
-	}
+		return DOC_ERR_ALLOC);
 
 	//read FibRgW97
 #ifdef DEBUG
-	LOG("_cfb_doc_fib_init: read FibRgW97\n");
+	LOG("read FibRgW97");
 #endif
 	if (fread(fib->rgW97, 28, 1, fp) != 1){
 		free(fib->base);
@@ -138,11 +131,11 @@ static int _doc_fib_init(Fib *fib, FILE *fp, struct cfb *cfb){
 		return DOC_ERR_FILE;
 	}
 	if (cfb->biteOrder){
-		fib->rgW97->lidFE = bo_16_sw(fib->rgW97->lidFE);
+		fib->rgW97->lidFE = bswap_16(fib->rgW97->lidFE);
 	}
 
 #ifdef DEBUG
-	LOG("_cfb_doc_fib_init: read Fib.cslw\n");
+	LOG("read Fib.cslw");
 #endif	
 	//read Fib.cslw
 	if (fread(&(fib->cslw), 2, 1, fp) != 1){
@@ -151,11 +144,11 @@ static int _doc_fib_init(Fib *fib, FILE *fp, struct cfb *cfb){
 		return DOC_ERR_FILE;
 	}
 	if (cfb->biteOrder){
-		fib->cslw = bo_16_sw(fib->cslw);
+		fib->cslw = bswap_16(fib->cslw);
 	}
 
 #ifdef DEBUG
-	LOG("_cfb_doc_fib_init: check cslw: 0x%x\n", fib->cslw);
+	LOG("check cslw: 0x%x", fib->cslw);
 #endif	
 	//check cslw
 	if (fib->cslw != 22) {
@@ -164,19 +157,15 @@ static int _doc_fib_init(Fib *fib, FILE *fp, struct cfb *cfb){
 		return DOC_ERR_HEADER;
 	}	
 
-#ifdef DEBUG
-	LOG("_cfb_doc_fib_init: allocate FibRgLw97\n");
-#endif	
 	//allocate FibRgLw97
-	fib->rgLw97 = (FibRgLw97 *)malloc(88);
-	if (!fib->rgLw97){
+	fib->rgLw97 = (FibRgLw97 *)MALLOC(88,
+		ERR("malloc");
 		free(fib->base);
 		free(fib->rgW97);
-		return DOC_ERR_ALLOC;
-	}
+		return DOC_ERR_ALLOC);
 	
 #ifdef DEBUG
-	LOG("_cfb_doc_fib_init: read Fib.FibRgLw97\n");
+	LOG("read Fib.FibRgLw97");
 #endif	
 	//read FibRgLw97
 	if (fread(fib->rgLw97, 88, 1, fp) != 1){
@@ -186,18 +175,18 @@ static int _doc_fib_init(Fib *fib, FILE *fp, struct cfb *cfb){
 		return DOC_ERR_FILE;
 	}	
 	if (cfb->biteOrder){
-		fib->rgLw97->cbMac      = bo_32_sw(fib->rgLw97->cbMac);
-		fib->rgLw97->ccpText    = bo_32_sw(fib->rgLw97->ccpText);
-		fib->rgLw97->ccpFtn     = bo_32_sw(fib->rgLw97->ccpFtn);
-		fib->rgLw97->ccpHdd     = bo_32_sw(fib->rgLw97->ccpHdd);
-		fib->rgLw97->ccpAtn     = bo_32_sw(fib->rgLw97->ccpAtn);
-		fib->rgLw97->ccpEdn     = bo_32_sw(fib->rgLw97->ccpEdn);
-		fib->rgLw97->ccpTxbx    = bo_32_sw(fib->rgLw97->ccpTxbx);
-		fib->rgLw97->ccpHdrTxbx = bo_32_sw(fib->rgLw97->ccpHdrTxbx);
+		fib->rgLw97->cbMac      = bswap_32(fib->rgLw97->cbMac);
+		fib->rgLw97->ccpText    = bswap_32(fib->rgLw97->ccpText);
+		fib->rgLw97->ccpFtn     = bswap_32(fib->rgLw97->ccpFtn);
+		fib->rgLw97->ccpHdd     = bswap_32(fib->rgLw97->ccpHdd);
+		fib->rgLw97->ccpAtn     = bswap_32(fib->rgLw97->ccpAtn);
+		fib->rgLw97->ccpEdn     = bswap_32(fib->rgLw97->ccpEdn);
+		fib->rgLw97->ccpTxbx    = bswap_32(fib->rgLw97->ccpTxbx);
+		fib->rgLw97->ccpHdrTxbx = bswap_32(fib->rgLw97->ccpHdrTxbx);
 	}
 	
 #ifdef DEBUG
-	LOG("_cfb_doc_fib_init: read Fib.cbRgFcLcb\n");
+	LOG("read Fib.cbRgFcLcb");
 #endif	
 	//read Fib.cbRgFcLcb
 	if (fread(&(fib->cbRgFcLcb), 2, 1, fp) != 1){
@@ -207,27 +196,23 @@ static int _doc_fib_init(Fib *fib, FILE *fp, struct cfb *cfb){
 		return DOC_ERR_FILE;
 	}
 	if (cfb->biteOrder){
-		fib->cbRgFcLcb = bo_16_sw(fib->cbRgFcLcb);
+		fib->cbRgFcLcb = bswap_16(fib->cbRgFcLcb);
 	}
 	
 #ifdef DEBUG
-	LOG("cbRgFcLcb: 0x%x\n", fib->cbRgFcLcb);
+	LOG("cbRgFcLcb: 0x%x", fib->cbRgFcLcb);
 #endif	
 
-#ifdef DEBUG
-	LOG("_cfb_doc_fib_init: allocate FibRgLw97 with size: %d\n", fib->cbRgFcLcb*8);
-#endif	
 	//allocate rgFcLcb
-	fib->rgFcLcb = (uint32_t *)malloc(fib->cbRgFcLcb*8);
-	if (!fib->rgFcLcb){
+	fib->rgFcLcb = (uint32_t *)MALLOC(fib->cbRgFcLcb*8,
+		ERR("malloc");
 		free(fib->base);
 		free(fib->rgW97);
 		free(fib->rgLw97);
-		return DOC_ERR_ALLOC;
-	}	
+		return DOC_ERR_ALLOC);
 
 #ifdef DEBUG
-	LOG("_cfb_doc_fib_init: read Fib.rgFcLcb\n");
+	LOG("read Fib.rgFcLcb");
 #endif	
 	//read rgFcLcb
 	if (fread(fib->rgFcLcb, 8, fib->cbRgFcLcb, fp) != fib->cbRgFcLcb){
@@ -240,39 +225,35 @@ static int _doc_fib_init(Fib *fib, FILE *fp, struct cfb *cfb){
 	if (cfb->biteOrder){
 		int i;
 		for (i = 0; i < fib->cbRgFcLcb/4; ++i) {
-			fib->rgFcLcb[i] = bo_32_sw(fib->rgFcLcb[i]);	
+			fib->rgFcLcb[i] = bswap_32(fib->rgFcLcb[i]);	
 		}
 	}
 
 #ifdef DEBUG
-	LOG("_cfb_doc_fib_init: read Fib.cswNew\n");
+	LOG("read Fib.cswNew");
 #endif	
 	//read Fib.cswNew
 	fread(&(fib->cswNew), 2, 1, fp);
 
 #ifdef DEBUG
-	LOG("cswNew: 0x%x\n", fib->cswNew);
+	LOG("cswNew: 0x%x", fib->cswNew);
 #endif	
 	if (cfb->biteOrder){
-		fib->cswNew = bo_16_sw(fib->cswNew);
+		fib->cswNew = bswap_16(fib->cswNew);
 	}
 
 	if (fib->cswNew > 0){
-#ifdef DEBUG
-	LOG("_cfb_doc_fib_init: allocate FibRgCswNew with size: %d\n", fib->cswNew * 2);
-#endif		
 		//allocate FibRgCswNew
-		fib->rgCswNew = (FibRgCswNew *)malloc(fib->cswNew * 2);
-		if (!fib->rgFcLcb){
+		fib->rgCswNew = (FibRgCswNew *)MALLOC(fib->cswNew * 2,
+		  ERR("malloc");
 			free(fib->base);
 			free(fib->rgW97);
 			free(fib->rgLw97);
 			free(fib->rgFcLcb);
-			return DOC_ERR_ALLOC;
-		}	
+			return DOC_ERR_ALLOC);
 
 #ifdef DEBUG
-	LOG("_cfb_doc_fib_init: read FibRgCswNew\n");
+	LOG("read FibRgCswNew");
 #endif		
 		//read FibRgCswNew
 		if (fread(fib->rgCswNew, 2, fib->cswNew, fp) != fib->cswNew){
@@ -283,33 +264,36 @@ static int _doc_fib_init(Fib *fib, FILE *fp, struct cfb *cfb){
 			return DOC_ERR_FILE;
 		}	
 		if (cfb->biteOrder){
-			fib->rgCswNew->nFibNew = bo_16_sw(fib->rgCswNew->nFibNew);
+			fib->rgCswNew->nFibNew = bswap_16(fib->rgCswNew->nFibNew);
 			int i;
 			for (i = 0; i < 4; ++i) {
-				fib->rgCswNew->rgCswNewData[i] = bo_16_sw(fib->rgCswNew->rgCswNewData[i]);
+				fib->rgCswNew->rgCswNewData[i] = bswap_16(fib->rgCswNew->rgCswNewData[i]);
 			}
 		}
 	}
 #ifdef DEBUG
-	LOG("_cfb_doc_fib_init done\n");
+	LOG("done");
 #endif	
 	return 0;
 };
 
 static FILE *_table_stream(cfb_doc_t *doc, struct cfb *cfb){
+#ifdef DEBUG
+	LOG("start");
+#endif	
 	char *table = (char *)"0Table";
 	Fib *fib = &doc[0].fib;
 	if (FibBaseG(fib[0].base))
 		table = (char *)"1Table";
 #ifdef DEBUG
-	LOG("_table_stream: table: %s\n", table);
+	LOG("table name: %s\n", table);
 #endif	
 	return cfb_get_stream(cfb, table);
 }
 
 int _plcpcd_init(struct PlcPcd * PlcPcd, uint32_t len, cfb_doc_t *doc){
 #ifdef DEBUG
-	LOG("start _plcpcd_init\n");
+	LOG("start");
 #endif	
 	
 	int i;
@@ -330,29 +314,25 @@ int _plcpcd_init(struct PlcPcd * PlcPcd, uint32_t len, cfb_doc_t *doc){
 		lastCp = doc->fib.rgLw97->ccpText;
 
 #ifdef DEBUG
-	LOG("_plcpcd_init: lastCp: %d\n", lastCp);
+	LOG("lastCp: %d", lastCp);
 #endif	
 
-#ifdef DEBUG
-	LOG("_plcpcd_init: allocate aCP\n");
-#endif	
 	//allocate aCP
-	PlcPcd->aCp = (uint32_t *)malloc(4);
-	if (!PlcPcd->aCp){
-		free(PlcPcd);	
-		return -1;
-	}
+	PlcPcd->aCp = (uint32_t *)MALLOC(4,
+			ERR("malloc");
+			free(PlcPcd);	
+			return -1);
 
 	//read aCP
 	i=0;
 	uint32_t ch;
 	while(fread(&ch, 4, 1, doc->Table) == 1){
 		if (doc->biteOrder){
-			ch = bo_32_sw(ch);
+			ch = bswap_32(ch);
 		}
 		PlcPcd->aCp[i] = ch;
 #ifdef DEBUG
-	LOG("_plcpcd_init: aCp[%d]: %u\n", i, PlcPcd->aCp[i]);
+	LOG("aCp[%d]: %u", i, PlcPcd->aCp[i]);
 #endif		
 		i++;
 		if (ch == lastCp)
@@ -360,15 +340,14 @@ int _plcpcd_init(struct PlcPcd * PlcPcd, uint32_t len, cfb_doc_t *doc){
 
 		//realloc aCp
 #ifdef DEBUG
-	LOG("_plcpcd_init: realloc aCP with size: %ld\n", (i+1)*4);
+	LOG("realloc aCP with size: %d", (i+1)*4);
 #endif
-		void *ptr = realloc(PlcPcd->aCp, (i+1)*4);
-		if(!ptr)
-			break;
-		PlcPcd->aCp = (uint32_t *)ptr;
+		void *ptr = REALLOC(PlcPcd->aCp, (i+1)*4,
+				ERR("realloc");
+				break);
 	}
 #ifdef DEBUG
-	LOG("_plcpcd_init: number of cp in array: %d\n", i);
+	LOG("number of cp in array: %d", i);
 #endif	
 	//number of cp in array
 	PlcPcd->aCPl = i;
@@ -379,18 +358,14 @@ int _plcpcd_init(struct PlcPcd * PlcPcd, uint32_t len, cfb_doc_t *doc){
 	//number of Pcd in array
 	PlcPcd->aPcdl = size / 8;
 #ifdef DEBUG
-	LOG("_plcpcd_init: number of Pcd in array: %d\n", PlcPcd->aPcdl);
+	LOG("number of Pcd in array: %d", PlcPcd->aPcdl);
 #endif	
 	
-#ifdef DEBUG
-	LOG("_plcpcd_init: allocate aPcd with size: %ld\n", size);
-#endif
-	PlcPcd->aPcd = (struct Pcd *)malloc(size);
-	if (!PlcPcd->aPcd){
-		free(PlcPcd->aCp);	
-		free(PlcPcd);	
-		return -1;
-	}
+	PlcPcd->aPcd = (struct Pcd *)MALLOC(size,
+			ERR("malloc");
+			free(PlcPcd->aCp);	
+			free(PlcPcd);	
+			return -1);
 
 	// get Pcd array
 	for (i = 0; i < PlcPcd->aPcdl; ++i) {
@@ -400,20 +375,21 @@ int _plcpcd_init(struct PlcPcd * PlcPcd, uint32_t len, cfb_doc_t *doc){
 		fread(&Pcd.fc.fc, 4, 1, doc->Table);
 		fread(&Pcd.prm, 2, 1, doc->Table);
 		if (doc->biteOrder){
-			Pcd.ABCfR2 = bo_16_sw(Pcd.ABCfR2);
-			Pcd.fc.fc = bo_32_sw(Pcd.fc.fc);
-			Pcd.prm = bo_16_sw(Pcd.prm);
+			Pcd.ABCfR2 = bswap_16(Pcd.ABCfR2);
+			Pcd.fc.fc = bswap_32(Pcd.fc.fc);
+			Pcd.prm = bswap_16(Pcd.prm);
 		}
 
 #ifdef DEBUG
-		LOG("_plcpcd_init: PlcPcd->aPcd[%d]: ABCfR2: 0x%x, FC: %d, PRM: 0x%x\n", i, Pcd.ABCfR2, Pcd.fc.fc, Pcd.prm);
+		LOG("PlcPcd->aPcd[%d]: ABCfR2: 0x%x, FC: %d, PRM: 0x%x", 
+				i, Pcd.ABCfR2, Pcd.fc.fc, Pcd.prm);
 #endif	
 		PlcPcd->aPcd[i] = Pcd;
 	}
 
 	
 #ifdef DEBUG
-	LOG("_plcpcd_init done\n");
+	LOG("done");
 #endif	
 
 	return 0;
@@ -424,7 +400,7 @@ static int _clx_init(cfb_doc_t *doc)
 {
 
 #ifdef DEBUG
-	LOG("start _clx_init\n");
+	LOG("start");
 #endif
 
 	//get CLX
@@ -434,17 +410,17 @@ static int _clx_init(cfb_doc_t *doc)
 	//FibRgFcLcb97.fcClx specifies the offset in the Table Stream of a Clx
 	uint32_t fcClx = rgFcLcb97->fcClx;
 	if (doc->biteOrder)
-		fcClx = bo_32_sw(fcClx);
+		fcClx = bswap_32(fcClx);
 #ifdef DEBUG
-	LOG("fcClx: %d\n", fcClx);
+	LOG("fcClx: %d", fcClx);
 #endif
 	
 	//FibRgFcLcb97.lcbClx specifies the size, in bytes, of that Clx
 	uint32_t lcbClx = rgFcLcb97->lcbClx;
 	if (doc->biteOrder)
-		lcbClx = bo_32_sw(lcbClx);
+		lcbClx = bswap_32(lcbClx);
 #ifdef DEBUG
-	LOG("lcbClx: %d\n", lcbClx);
+	LOG("lcbClx: %d", lcbClx);
 #endif	
 
 	struct Clx *clx = &doc->clx;
@@ -454,104 +430,100 @@ static int _clx_init(cfb_doc_t *doc)
 	fseek(doc->Table, fcClx, SEEK_SET);
 	fread(&ch, 1, 1, doc->Table);
 #ifdef DEBUG
-	LOG("_clx_init: first bite of CLX: 0x%x\n", ch);
+	LOG("first bite of CLX: 0x%x", ch);
 #endif
 
 	if (ch == 0x01){ //we have RgPrc (Prc array)
 #ifdef DEBUG
-	LOG("_clx_init: we have RgPrc (Prc array)\n");
+	LOG("we have RgPrc (Prc array)");
 #endif		
 		//allocate RgPrc
-#ifdef DEBUG
-	LOG("_clx_init: allocate RgPrc\n");
-#endif
-		clx->RgPrc = (struct Prc *)malloc(sizeof(struct Prc));
-		if (!clx->RgPrc)
-			return DOC_ERR_ALLOC;
+		clx->RgPrc = NEW(struct Prc,
+				ERR("new");
+				return DOC_ERR_ALLOC);
 		
 		int16_t cbGrpprl; //the first 2 bite of PrcData - signed integer
 		fread(&cbGrpprl, 2, 1, doc->Table);
 		if (doc->biteOrder){
-			cbGrpprl = bo_16_sw(cbGrpprl);
+			cbGrpprl = bswap_16(cbGrpprl);
 		}
 #ifdef DEBUG
-	LOG("_clx_init: the first 2 bite of PrcData is cbGrpprl: 0x%x\n", cbGrpprl);
+	LOG("the first 2 bite of PrcData is cbGrpprl: 0x%x", cbGrpprl);
 #endif		
 		if (cbGrpprl > 0x3FA2) //error
 			return DOC_ERR_FILE;		
 		//allocate RgPrc->data 
-#ifdef DEBUG
-	LOG("_clx_init: allocate RgPrc->data\n");
-#endif
-		clx->RgPrc->data = (struct PrcData *)malloc(sizeof(struct PrcData));
-		if (!clx->RgPrc->data)
-			return DOC_ERR_ALLOC;
+		clx->RgPrc->data = NEW(struct PrcData,
+			ERR("new");
+			return DOC_ERR_ALLOC);
 
 		clx->RgPrc->data->cbGrpprl = cbGrpprl;
 
 		//allocate GrpPrl
-#ifdef DEBUG
-	LOG("_clx_init: allocate GrpPrl with size: 0x%x\n", cbGrpprl);
-#endif		
-		clx->RgPrc->data->GrpPrl = (struct Prl *)malloc(cbGrpprl);
-		if (!clx->RgPrc->data->GrpPrl)
-			return DOC_ERR_ALLOC;
+		clx->RgPrc->data->GrpPrl = (struct Prl *)MALLOC(cbGrpprl,
+				ERR("malloc");
+				return DOC_ERR_ALLOC);
 		
 		//read GrpPrl
 #ifdef DEBUG
-	LOG("_clx_init: read GrpPrl\n");
+	LOG("read GrpPrl");
 #endif		
-		fread(clx->RgPrc->data->GrpPrl, cbGrpprl, 1, doc->Table);
+		fread(clx->RgPrc->data->GrpPrl,
+			 	cbGrpprl, 1, doc->Table);
 		/* TODO:  parse GrpPrl + byteOrder */
 
 		//read ch again
 #ifdef DEBUG
-	LOG("_clx_init: again first bite of CLX: 0x%x\n", ch);
+	LOG("again first bite of CLX: 0x%x", ch);
 #endif		
 		fread(&ch, 1, 1, doc->Table);
 	}	
 
 	//get PlcPcd
-#ifdef DEBUG
-	LOG("_clx_init: allocate PlcPcd\n");
-#endif
-	clx->Pcdt = (struct Pcdt *)malloc(sizeof(struct Pcdt));
-	if (!clx->Pcdt)
-		return DOC_ERR_ALLOC;	
+	clx->Pcdt = NEW(struct Pcdt,
+			ERR("new");
+			return DOC_ERR_ALLOC);	
 
 	//read Pcdt->clxt - this must be 0x02
 	clx->Pcdt->clxt = ch;
 #ifdef DEBUG
-	LOG("_clx_init: Pcdt->clxt: 0x%x\n", clx->Pcdt->clxt);
+	LOG("Pcdt->clxt: 0x%x", clx->Pcdt->clxt);
 #endif	
 	if (clx->Pcdt->clxt != 0x02) { //some error
+		ERR("some error");
 		return DOC_ERR_FILE;		
 	}
 
 	//read lcb;
-	fread(&(clx->Pcdt->lcb), 4, 1, doc->Table);	
+	fread(&(clx->Pcdt->lcb), 
+			4, 1, doc->Table);	
 	if (doc->biteOrder){
-		clx->Pcdt->lcb = bo_32_sw(clx->Pcdt->lcb);
+		clx->Pcdt->lcb = bswap_32(clx->Pcdt->lcb);
 	}
 #ifdef DEBUG
-	LOG("_clx_init: Pcdt->lcb: %d\n", clx->Pcdt->lcb);
+	LOG("Pcdt->lcb: %d", clx->Pcdt->lcb);
 #endif	
 
 	//get PlcPcd
-	_plcpcd_init(&(clx->Pcdt->PlcPcd), clx->Pcdt->lcb, doc);
+	_plcpcd_init(&(clx->Pcdt->PlcPcd),
+		 	clx->Pcdt->lcb, doc);
 	
 #ifdef DEBUG
-	LOG("_clx_init: aCP: %d, PCD: %d\n", clx->Pcdt->PlcPcd.aCPl, clx->Pcdt->PlcPcd.aPcdl);
+	LOG("aCP: %d, PCD: %d", clx->Pcdt->PlcPcd.aCPl, 
+			clx->Pcdt->PlcPcd.aPcdl);
 #endif		
 
 #ifdef DEBUG
-	LOG("_clx_init done\n");
+	LOG("done");
 #endif
 	
 	return 0;
 }
 
 static int _doc_plcBtePapx_init(cfb_doc_t *doc){
+#ifdef DEBUG
+	LOG("start");
+#endif
 	FibRgFcLcb97 *fibRgFcLcb97 = 
 		(FibRgFcLcb97 *)(doc->fib.rgFcLcb);
 	doc->plcbtePapx = 
@@ -564,12 +536,74 @@ static int _doc_plcBtePapx_init(cfb_doc_t *doc){
 		ERR("can't read PlcBtePapx");
 		return -1;
 	}
+#ifdef DEBUG
+	LOG("plcbtePapx:");
+	char str[BUFSIZ] = "";
+	for (int i = 0; i < doc->plcbtePapxNaFc*2 - 1; ++i) {
+		char s[16];
+		sprintf(s, "%d ", 
+				doc->plcbtePapx->aFc[i]);
+		strcat(str, s);
+	}
+	LOG("%s", str);
+#endif
+
 	return 0;
 }
 
+static int _doc_plcBteChpx_init(cfb_doc_t *doc){
+#ifdef DEBUG
+	LOG("start");
+#endif
+	FibRgFcLcb97 *fibRgFcLcb97 = 
+		(FibRgFcLcb97 *)(doc->fib.rgFcLcb);
+	doc->plcbteChpx = 
+			plcbteChpx_get(
+					doc->Table, 
+					fibRgFcLcb97->fcPlcfBteChpx,
+					fibRgFcLcb97->lcbPlcfBteChpx, 
+					&doc->plcbteChpxNaFc); 
+	if (!doc->plcbteChpx){
+		ERR("can't read PlcBteChpx");
+		return -1;
+	}
+#ifdef DEBUG
+	LOG("plcbteChpx with naFc: %d", doc->plcbteChpxNaFc);
+	char str[BUFSIZ] = "";
+	for (int i = 0; i < doc->plcbteChpxNaFc*2 - 1; ++i) {
+		char s[16];
+		sprintf(s, "%d ", 
+				doc->plcbteChpx->aFc[i]);
+		strcat(str, s);
+	}
+	LOG("%s", str);
+#endif
+	return 0;
+}
+
+static int _doc_STSH_init(cfb_doc_t *doc){
+#ifdef DEBUG
+	LOG("start");
+#endif
+	FibRgFcLcb97 *fibRgFcLcb97 = 
+		(FibRgFcLcb97 *)(doc->fib.rgFcLcb);
+	doc->STSH = stsh_get(doc->Table, 
+			fibRgFcLcb97->fcStshf, 
+			fibRgFcLcb97->lcbStshf, 
+			&doc->lstshi);
+	
+	if (!doc->STSH){
+		ERR("can't read PlcBteChpx");
+		return -1;
+	}
+	
+	return 0;
+}
+
+
 int doc_read(cfb_doc_t *doc, struct cfb *cfb){
 #ifdef DEBUG
-	LOG("start cfb_doc_init\n");
+	LOG("start");
 #endif
 
 	memset(doc, 0, sizeof(cfb_doc_t));
@@ -591,7 +625,7 @@ int doc_read(cfb_doc_t *doc, struct cfb *cfb){
 	//get table
 	doc->Table = _table_stream(doc, cfb);
 	if (!doc->Table){
-		//printf("Can't get Table stream\n"); 
+		ERR("Can't get Table stream"); 
 		return DOC_ERR_FILE;
 	}
 
@@ -604,14 +638,65 @@ int doc_read(cfb_doc_t *doc, struct cfb *cfb){
 	ret = _doc_plcBtePapx_init(doc);
 	if (ret)
 		return ret;	
+	
+	// get PlcBteChpx
+	ret = _doc_plcBteChpx_init(doc);
+	if (ret)
+		return ret;	
+
+	// get STSH
+	ret = _doc_STSH_init(doc);
+	if (ret)
+		return ret;	
 
 #ifdef DEBUG
-	LOG("cfb_doc_init done\n");
+	LOG("done");
 #endif	
 	return 0;
 }
 
 void doc_close(cfb_doc_t *doc)
 {
+	if (doc){
+		if (doc->fib.base)
+			free(doc->fib.base);
+		if (doc->fib.rgW97)
+			free(doc->fib.rgW97);
+		if (doc->fib.rgLw97)
+			free(doc->fib.rgLw97);
+		if (doc->fib.rgFcLcb)
+			free(doc->fib.rgFcLcb);
+		if (doc->fib.rgCswNew)
+			free(doc->fib.rgCswNew);
+		
+		if (doc->plcbteChpx)
+			free(doc->plcbteChpx);
+		if (doc->plcbtePapx)
+			free(doc->plcbtePapx);
+		if (doc->STSH)
+			stsh_free(doc->STSH);
+		
+		if (doc->clx.Pcdt){
+			if (doc->clx.Pcdt->PlcPcd.aCp)
+				free(doc->clx.Pcdt->PlcPcd.aCp);
+			if (doc->clx.Pcdt->PlcPcd.aPcd)
+				free(doc->clx.Pcdt->PlcPcd.aPcd);
+			free (doc->clx.Pcdt);
+		}
+		
+		if (doc->clx.RgPrc){
+			if (doc->clx.RgPrc->data){
+				if (doc->clx.RgPrc->data->GrpPrl)
+					free(doc->clx.RgPrc->data->GrpPrl);
+				free(doc->clx.RgPrc->data);
+			}
+			free(doc->clx.RgPrc);
+		}
+		
+		if (doc->Table)
+			fclose(doc->Table);
+		if (doc->WordDocument)
+			fclose(doc->WordDocument);
+	}
 /* TODO: free memory and close streams */
 }
