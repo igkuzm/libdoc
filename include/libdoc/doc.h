@@ -2,7 +2,7 @@
  * File              : doc.h
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 04.11.2022
- * Last Modified Date: 29.05.2024
+ * Last Modified Date: 30.05.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
  */
 
@@ -3880,6 +3880,13 @@ typedef struct Fib
 	FibRgCswNew *rgCswNew;
 } Fib;
 
+enum {
+	stkPar = 1,
+	stkCha = 2,
+	stkTab = 3,
+	stkNum = 4,
+};
+
 /* 2.9.260 StdfBase
  * The StdfBase structure specifies general information
  * about a style. */
@@ -4026,14 +4033,31 @@ USHORT grfstd;       //grfstd (2 bytes): A GRFSTD that
 											 //specifies miscellaneous style
 											 //properties.
 };
+
 static USHORT StdfBaseIstdBase(struct StdfBase *p)
 {
-	//LOG("stk_istdBase: 0b%b", p->stk_istdBase);
-	//USHORT x = ((p->stk_istdBase & 0xFFF0) >> 4);
-	USHORT x = (p->stk_istdBase & 0x0FFF);
-	//LOG("istdBase    : 0b%b", x);
+	USHORT x = ((p->stk_istdBase & 0xFFF0) >> 4);
 	return x;
 }
+
+static BYTE StdfBaseStk(struct StdfBase *p)
+{
+	USHORT x = p->stk_istdBase & 0xF;
+	return (BYTE)x;
+}
+
+static BYTE StdfBaseCupx(struct StdfBase *p)
+{
+	USHORT x = p->cupx_istdNext & 0xF;
+	return (BYTE)x;
+}
+
+static USHORT StdfBaseIstdNext(struct StdfBase *p)
+{
+	USHORT x = ((p->cupx_istdNext & 0xFFF0) >> 4);
+	return x;
+}
+
 
 /* 2.9.259 Stdf
  * The Stdf structure specifies general information about
@@ -4049,6 +4073,235 @@ struct Stdf {
 														//specifies general information
 														//about the style.
 };
+
+/* 2.9.353 Xst
+ * The Xst structure is a string. The string is prepended by
+ * its length and is not null-terminated.*/
+struct Xst {
+	USHORT cch;       //cch (2 bytes): An unsigned integer
+										//that specifies the number of
+										//characters that are contained in the
+										//rgtchar array.
+
+	USHORT rgtchar[]; //rgtchar (variable): An array of 16-bit
+										//Unicode characters that make up a
+										//string.
+};
+
+/* 2.9.354 Xstz
+ * The Xstz structure is a string. The string is prepended
+ * by its length and is null-terminated.*/
+struct Xstz {
+	struct Xst *xst_chTerm;
+										// xst (variable): An Xst structure that
+										// is prepended with a value which
+										// specifies the length of the
+										// string.
+
+										// chTerm (2 bytes): A null-terminating
+										// character. This value MUST be zero.
+};
+
+/* 2.9.258 STD
+ * The STD structure specifies a style definition.*/
+struct STD {
+	struct Stdf stdf;      //stdf (variable): An Stdf that
+										     //specifies basic information about the
+										     //style.
+
+	BYTE xstzName_grLPUpxSw[];//xstzName (variable): An Xstz
+												 //structure that specifies the
+												 //primary style name followed by
+												 //anybinalternate names (aliases),
+												 //with meaning as specified in
+												 //[ECMA-376] part 4, section
+												 //2.7.3.9 (name)
+												 //and [ECMA-376] part 4, section
+												 //2.7.3.1 (aliases). The primary
+												 //style name and any alternate
+												 //style
+												 //names are combined into one
+												 //string, with a comma character
+												 //(U+002C) separating the primary
+												 //style name and any alternate
+												 //style names. If there are no
+												 //alternate style names, the
+												 //trailing
+												 //comma is omitted.
+												 //Each name, whether primary or
+												 //alternate, MUST NOT be empty and
+												 //MUST be unique within all
+												 //names in the stylesheet.
+
+								         //grLPUpxSw (variable): A GrLPUpxSw
+												 //structure that specifies the
+												 //formatting for the style.
+};
+
+struct STD_noStdfPost2000 {
+	struct StdfBase stdf;  //stdf (variable): An Stdf that
+										     //specifies basic information about the
+										     //style.
+
+	BYTE xstzName_grLPUpxSw[]; //xstzName (variable): An Xstz
+												 //structure that specifies the
+												 //primary style name followed by
+												 //anybinalternate names (aliases),
+												 //with meaning as specified in
+												 //[ECMA-376] part 4, section
+												 //2.7.3.9 (name)
+												 //and [ECMA-376] part 4, section
+												 //2.7.3.1 (aliases). The primary
+												 //style name and any alternate
+												 //style
+												 //names are combined into one
+												 //string, with a comma character
+												 //(U+002C) separating the primary
+												 //style name and any alternate
+												 //style names. If there are no
+												 //alternate style names, the
+												 //trailing
+												 //comma is omitted.
+												 //Each name, whether primary or
+												 //alternate, MUST NOT be empty and
+												 //MUST be unique within all
+												 //names in the stylesheet.
+
+								         //grLPUpxSw (variable): A GrLPUpxSw
+												 //structure that specifies the
+												 //formatting for the style.
+};
+
+
+/* 2.9.274 Stshif
+ * The Stshif structure specifies general stylesheet
+ * information.*/
+struct Stshif {
+	USHORT cstd;                  //cstd (2 bytes): An
+																//unsigned integer that
+																//specifies the count of
+																//elements in STSH.rglpstd.
+																//This value
+																//MUST be equal to or
+																//greater than 0x000F, and
+																//MUST be less than 0x0FFE.
+
+	USHORT cbSTDBaseInFile;       //cbSTDBaseInFile (2 bytes):
+																//An unsigned integer that
+																//specifies the size, in
+																//bytes, of the Stdf
+																//structure. The Stdf
+																//structure contains an
+																//StdfBase structure that is
+																//followed by a
+																//StdfPost2000OrNone
+																//structure which contains
+																//an optional StdfPost2000
+																//structure. This value
+																//MUST be 0x000A when the
+																//Stdf structure does not
+																//contain an StdfPost2000
+																//structure and MUST
+																//be 0x0012 when the Stdf
+																//structure does contain an
+																//StdfPost2000 structure.
+
+  USHORT A_fReserved;           //A - fStdStylenamesWritten
+																//(1 bit): This value MUST
+																//be 1 and MUST be ignored.
+
+																//fReserved (15 bits): This
+																//value MUST be zero and
+																//MUST be ignored.
+
+	USHORT stiMaxWhenSaved;       //stiMaxWhenSaved (2 bytes):
+																//An unsigned integer that
+																//specifies a value that is
+																//1 larger than the
+																//largest StdfBase.sti index
+																//of any application-defined
+																//style. This SHOULD<241> be
+																//equal to the
+																//largest sti index that is
+																//defined in the
+																//application, incremented
+																//by 1.
+
+	USHORT istdMaxFixedWhenSaved; //istdMaxFixedWhenSaved (2
+																//bytes): An unsigned
+																//integer that specifies the
+																//count of elements at
+																//the start of STSH.rglpstd
+																//that are reserved for
+																//fixed-index
+																//application-defined
+																//styles. This value
+																//MUST be 0x000F.
+
+	USHORT nVerBuiltInNamesWhenSaved;
+																//nVerBuiltInNamesWhenSaved
+																//(2 bytes): An unsigned
+																//integer that specifies the
+																//binthe style names as
+																//defined by the application
+																//that writes the file. This
+																//value SHOULD<242> be 0.
+
+	USHORT ftcAsci;               //ftcAsci (2 bytes): A
+																//signed integer that
+																//specifies an operand value
+																//for the sprmCRgFtc0 for
+																//default
+																//document formatting, as
+																//defined in the section
+																//Determining Formatting
+																//Properties.
+
+	USHORT ftcFE;                 //ftcFE (2 bytes): A signed
+																//integer that specifies an
+																//operand value for the
+																//sprmCRgFtc1 for default
+																//document formatting, as
+																//defined in the section
+																//Determining Formatting
+																//Properties.
+
+	USHORT ftcOther;              //ftcOther (2 bytes): A
+																//signed integer that
+																//specifies an operand value
+																//for the sprmCRgFtc2 for
+																//default
+																//document formatting, as
+																//defined in the section
+																//Determining Formatting
+																//Properties.
+};
+
+/* 2.9.272 STSHI
+ * The STSHI structure specifies general stylesheet and
+ * related information.*/
+struct STSHI {
+	struct Stshif stshif; //stshif (18 bytes): An Stshif that
+												//specifies general stylesheet
+												//information.
+
+	USHORT ftcBi;					//ftcBi (2 bytes): A signed integer
+												//that specifies an operand value
+												//for the sprmCFtcBi for default
+												//document formatting, as defined in
+												//the section Determining Formatting
+												//Properties.
+
+
+	
+	BYTE StshiLsd_StshiB[];
+												//StshiLsd (variable): An StshiLsd
+												//that specifies latent style data.
+												
+												//StshiB (variable): An STSHIB. This
+												//MUST be ignored.
+};
+
 
 /* 2.9.135 LPStd
  * The LPStd structure specifies a length-prefixed style
@@ -4074,7 +4327,7 @@ struct LPStshi {
 	USHORT cbStshi; //cbStshi (2 bytes): An unsigned integer
 										//that specifies the size, in bytes, of
 										//stshi
-	BYTE stshi[];  //stshi (variable): A stshi that
+	struct STSHI stshi[];//stshi (variable): A stshi that
 										//specifies general stylesheet
 										//information
 };
@@ -4196,6 +4449,166 @@ static struct LPStd *LPStd_at_index(
 	void *p = &(rglpstd[i]); 
 	return (struct LPStd *)p;	
 }
+
+/* 2.9.336 UpxChpx
+ * The UpxChpx structure specifies the character formatting
+ * properties that differ from the parent style
+ * as defined by StdfBase.istdBase. */
+struct UpxChpx {
+	BYTE *grpprlChpx_padding; //grpprlChpx (variable): An
+														//array of Prl elements that
+														//specifies character formatting
+														//properties.
+														//This array MUST contain only
+														//character Sprm structures.
+														//However, this array MUST NOT
+														//contain
+														//any Sprm structure that
+														//specifies a property that is
+														//preserved across the
+														//application of the
+														//sprmCIstd value. Finally, this
+														//array MUST NOT contain any of
+														//the following:
+														//1. sprmCFSpecVanish
+														//2. sprmCIstd
+														//3. sprmCIstdPermute
+														//4. sprmCPlain
+														//5. sprmCMajority
+														//6. sprmCDispFldRMark
+														//7. sprmCIdslRMarkDel
+														//8. sprmCLbcCRJ
+														//9. sprmCPbiIBullet
+														//10. sprmCPbiGrf
+														//Additionally, character,
+														//paragraph, and list styles
+														//MUST NOT contain the sprmCCnf
+														//value.
+														
+														//padding (variable): A
+														//UPXPadding structure that
+														//specifies the padding that is
+														//required to make
+														//the UpxChpx structure an even
+														//length.
+};
+
+/* 2.9.338 UpxPapx
+ * The UpxPapx structure specifies the paragraph formatting
+ * properties that differ from the parent style,
+ * as defined by StdfBase.istdBase.*/
+struct UpxPapx {
+	USHORT istd;           //(optional) 
+												 //istd (2 bytes): An unsigned
+												 //integer that specifies the istd
+												 //value of the paragraph style. The
+												 //istd
+												 //value MUST be equal to the
+												 //current style.
+	
+	BYTE *grpprlPapx_padding;      
+												 //(variable)
+												 //grpprlPapx (variable): An array
+												 //of Prl elements that specify
+												 //paragraph formatting properties.
+												 //This
+												 //array MUST contain only paragraph
+												 //Sprm structures.
+												 //List styles MUST contain only the
+												 //sprmPIlfo value.
+												 //Paragraph and table styles MUST
+												 //NOT contain any Sprm structure
+												 //that specifies a property that is
+												 //preserved across the application
+												 //of the sprmPIstd value.
+												 //Additionally, paragraph and table
+												 //styles
+												 //MUST NOT contain any of the
+												 //following:
+												 // sprmPIstd
+												 // sprmPIstdPermute
+												 // sprmPIncLvl
+												 // sprmPNest80
+												 // sprmPChgTabs
+												 // sprmPDcs
+												 // sprmPHugePapx
+												 // sprmPFInnerTtp
+												 // sprmPFOpenTch
+												 // sprmPNest
+												 // sprmPFNoAllowOverlap
+												 // sprmPIstdListPermute
+												 // sprmPTableProps
+												 // sprmPTIstdInfo
+												 //Additionally, paragraph styles
+												 //MUST NOT contain sprmPCnf.
+	
+												 //padding (variable): A UPXPadding
+												 //value that specifies the padding
+												 //that is required to make the
+												 //UpxPapx structure an even length.
+};
+
+/* 2.9.140 LPUpxPapx
+ * The LPUpxPapx structure specifies paragraph formatting
+ * properties.
+ * The structure is padded to an even length, but the length
+ * in cbUpx MUST NOT include this padding.*/
+struct LPUpxPapx {
+	USHORT cbUpx;    //cbUpx (2 bytes): An unsigned integer
+									 //that specifies the size, in bytes, of
+									 //PAPX, not including the
+									 //(potential) padding.
+	struct UpxPapx PAPX[];
+									 //PAPX (variable): A UpxPapx that
+									 //specifies paragraph formatting
+									 //properties.
+};
+
+/* 2.9.138 LPUpxChpx
+ * The LPUpxChpx structure specifies character formatting
+ * properties. This structure is padded to an
+ * even length, but the length in cbUpx MUST NOT include
+ * this padding.*/
+struct LPUpxChpx{
+	USHORT cbUpx;         // cbUpx (2 bytes): An unsigned
+												// integer that specifies the size,
+												// in bytes, of CHPX. This value
+												// does not include the padding.
+	
+	struct UpxChpx CHPX[];//CHPX (variable): A UpxChpx that
+												//specifies character formatting
+												//properties.
+};
+
+/* 2.9.267 StkParaGRLPUPX
+ * The StkParaGRLPUPX structure that specifies the
+ * formatting properties for a paragraph style. All
+ * members of StkParaGRLPUPX are optional, but those that
+ * are present MUST appear in the order
+ * that is specified in the following table. Additionally,
+ * the number of members that are present MUST
+ * match the cupx member of StdfBase for the style. */
+struct StkParaGRLPUPX {
+	BYTE *data;
+															//lpUpxPapx (variable): A
+															//LPUpxPapx that specifies the
+															//paragraph formatting
+															//properties for the
+															//style.
+  
+															//lpUpxChpx (variable): A
+															//LPUpxChpx that specifies the
+															//character formatting
+															//properties for the
+															//style.
+	
+															//StkParaLpUpxGrLpUpxRM
+															//(variable): A
+															//StkParaLPUpxGrLPUpxRM that
+															//specifies the revision-
+															//marking information and
+															//formatting for the style.
+};
 
 /*
  * MS-DOC Structure.
