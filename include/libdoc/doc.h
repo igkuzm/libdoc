@@ -3477,7 +3477,11 @@ static struct PlcBteChpx * plcbteChpx_get(
 			ERR("malloc"); 
 			exit(ENOMEM)); 
 	fseek(fp, offset, SEEK_SET);
-	fread(p, size, 1, fp);
+	if (fread(p, size, 1, fp) != 1)
+	{
+		ERR("fread");
+		return NULL;
+	}
 
 	// get nuber of aFc;
 	*n = (size/4 - 1)/2 + 1;
@@ -3544,7 +3548,11 @@ static struct PlcBtePapx * plcbtePapx_get(
 			ERR("malloc"); 
 			exit(ENOMEM)); 
 	fseek(fp, offset, SEEK_SET);
-	fread(p, size, 1, fp);
+	if (fread(p, size, 1, fp) != 1)
+	{
+		ERR("fread");
+		return NULL;
+	}
 
 	// get nuber of aFc;
 	*n = (size/4 - 1)/2 + 1;
@@ -3701,7 +3709,11 @@ static struct PapxFkp * papxFkp_get(
 			ERR("malloc"); 
 			exit(ENOMEM));
 	fseek(fp, offset, SEEK_SET);
-	fread(p, 512, 1, fp);
+	if (fread(p, 512, 1, fp) != 1)
+	{
+		ERR("fread");
+		return NULL;
+	}
 
 	struct PapxFkp *st =	NEW(
 			struct PapxFkp, 
@@ -3788,7 +3800,11 @@ static struct ChpxFkp * chpxFkp_get(
 			ERR("malloc"); 
 			exit(ENOMEM));
 	fseek(fp, offset, SEEK_SET);
-	fread(p, 512, 1, fp);
+	if (fread(p, 512, 1, fp) != 1)
+	{
+		ERR("fread");
+		return NULL;
+	}
 
 	struct ChpxFkp *st =	NEW(struct ChpxFkp, 
 			ERR("malloc"); 
@@ -4106,7 +4122,11 @@ static struct STSH *STSH_get(FILE *fp,
 
 	fseek(fp, off, SEEK_SET);
 	USHORT cbStshi;
-	fread(&cbStshi, 2, 1, fp);
+	if (fread(&cbStshi, 2, 1, fp) != 1)
+	{
+		ERR("fread");
+		return NULL;
+	}
 #ifdef DEBUG
 	LOG("cbStshi: %d", cbStshi);
 #endif
@@ -4120,8 +4140,12 @@ static struct STSH *STSH_get(FILE *fp,
 			ERR("malloc");
 			exit(ENOMEM));
 	STSH->lpstshi->cbStshi = cbStshi;
-	fread(STSH->lpstshi->stshi, cbStshi, 1,
-			fp);
+	if (fread(STSH->lpstshi->stshi, cbStshi, 1,
+			fp) != 1)
+	{
+		ERR("fread");
+		return NULL;
+	}
 
 	// get len of rglpstd
 	*n = size - cbStshi - 2;
@@ -4132,8 +4156,12 @@ static struct STSH *STSH_get(FILE *fp,
 	STSH->rglpstd = (BYTE *)MALLOC(*n, 
 			ERR("malloc");
 			exit(ENOMEM));
-	fread(STSH->rglpstd, *n, 1,
-			fp);
+	if (fread(STSH->rglpstd, *n, 1,
+			fp) != 1)
+	{
+		ERR("fread");
+		return NULL;
+	}
 
 	return STSH;
 }
@@ -4146,8 +4174,8 @@ static void STSH_free(struct STSH *stsh){
 	}
 }
 
-static LPStd *LPStd_at_index(BYTE *rglpstd, int size, 
-		int index)
+static struct LPStd *LPStd_at_index(
+		BYTE *rglpstd, int size, int index)
 {
 	int i, k;
 	for (i = 0, k = 0; i < size; ++i, ++k) {
@@ -4166,7 +4194,7 @@ static LPStd *LPStd_at_index(BYTE *rglpstd, int size,
 		return NULL;
 
 	void *p = &(rglpstd[i]); 
-	return (LPStd *)p;	
+	return (struct LPStd *)p;	
 }
 
 /*

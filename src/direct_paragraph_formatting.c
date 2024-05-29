@@ -58,8 +58,12 @@ void direct_paragraph_formatting(
 
 	int size = 0;
 	BYTE cb;
-	fread(&cb, 1, 1,
-			doc->WordDocument);	
+	if (!fread(&cb, 1, 1,
+				doc->WordDocument))
+	{
+		ERR("fread");
+		return;
+	};	
 #ifdef DEBUG
 	LOG("PapxInFkp cb: %d", cb);
 #endif
@@ -69,8 +73,12 @@ void direct_paragraph_formatting(
 	} else {
 		// cb is 0
 		BYTE cb_;
-		fread(&cb_, 1, 1,
-				doc->WordDocument);	
+		if (fread(&cb_, 1, 1,
+				doc->WordDocument))
+		{
+			ERR("fread");
+			return;
+		};	
 #ifdef DEBUG
 	LOG("PapxInFkp cb': %d", cb_);
 #endif

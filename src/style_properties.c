@@ -41,17 +41,22 @@ void apply_style_properties(cfb_doc_t *doc, USHORT istd)
 		LPStd_at_index(STSH->rglpstd, 
 				doc->lrglpstd, istd);
 	if (!LPStd){
+#ifdef DEBUG
+	LOG("no STD int STSH at index: %d", istd);
+#endif
 		return;
 	}
 
 	if (LPStd->cbStd == 0){
+#ifdef DEBUG
+	LOG("STD at index %d is 0 - skiping...", istd);
+#endif
 		return;
 	}
 
 /* 4. Read the STD structure as LPStd.std, of length
  * LPStd.cbStd bytes. */
-	BYTE STD[LPStd->cbStd];
-	memcpy(STD, LPStd->STD, LPStd->cbStd);
+	struct STD *STD = LPStd->STD;
 
 /* 5. From the STD.stdf.stdfBase obtain istdBase. If
  * istdBase is any value other than 0x0FFF, then
@@ -65,7 +70,7 @@ void apply_style_properties(cfb_doc_t *doc, USHORT istd)
 	if (istdBase != 0x0FFF){
 		// recursion 
 #ifdef DEBUG
-	LOG("parent style: 0x%04x", istdBase);
+	LOG("parent style: %d", istdBase);
 #endif
 		apply_style_properties(doc, istdBase);
 	}

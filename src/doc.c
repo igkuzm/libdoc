@@ -71,7 +71,10 @@ static int _doc_fib_init(Fib *fib, FILE *fp, struct cfb *cfb){
 	LOG("read fibbase");
 #endif
 	
-	if (fread(fib->base, 32, 1, fp) != 1){
+	if (fread(fib->base, 32, 1,
+				fp) != 1)
+	{
+		ERR("fread");
 		free(fib->base);
 		return DOC_ERR_FILE;
 	}
@@ -98,7 +101,10 @@ static int _doc_fib_init(Fib *fib, FILE *fp, struct cfb *cfb){
 	LOG("read csw");
 #endif	
 	//read Fib.csw
-	if (fread(&(fib->csw), 2, 1, fp) != 1){
+	if (fread(&(fib->csw), 2, 1,
+				fp) != 1)
+	{
+		ERR("fread");
 		free(fib->base);
 		return DOC_ERR_FILE;
 	}
@@ -125,7 +131,10 @@ static int _doc_fib_init(Fib *fib, FILE *fp, struct cfb *cfb){
 #ifdef DEBUG
 	LOG("read FibRgW97");
 #endif
-	if (fread(fib->rgW97, 28, 1, fp) != 1){
+	if (fread(fib->rgW97, 28, 1,
+				fp) != 1)
+	{
+		ERR("fread");
 		free(fib->base);
 		free(fib->rgW97);
 		return DOC_ERR_FILE;
@@ -168,7 +177,10 @@ static int _doc_fib_init(Fib *fib, FILE *fp, struct cfb *cfb){
 	LOG("read Fib.FibRgLw97");
 #endif	
 	//read FibRgLw97
-	if (fread(fib->rgLw97, 88, 1, fp) != 1){
+	if (fread(fib->rgLw97, 88, 1,
+				fp) != 1)
+	{
+		ERR("fread");
 		free(fib->base);
 		free(fib->rgW97);
 		free(fib->rgLw97);
@@ -189,7 +201,10 @@ static int _doc_fib_init(Fib *fib, FILE *fp, struct cfb *cfb){
 	LOG("read Fib.cbRgFcLcb");
 #endif	
 	//read Fib.cbRgFcLcb
-	if (fread(&(fib->cbRgFcLcb), 2, 1, fp) != 1){
+	if (fread(&(fib->cbRgFcLcb), 2, 1,
+				fp) != 1)
+	{
+		ERR("fread");
 		free(fib->base);
 		free(fib->rgW97);
 		free(fib->rgLw97);
@@ -215,7 +230,10 @@ static int _doc_fib_init(Fib *fib, FILE *fp, struct cfb *cfb){
 	LOG("read Fib.rgFcLcb");
 #endif	
 	//read rgFcLcb
-	if (fread(fib->rgFcLcb, 8, fib->cbRgFcLcb, fp) != fib->cbRgFcLcb){
+	if (fread(fib->rgFcLcb, 8, fib->cbRgFcLcb,
+				fp) != fib->cbRgFcLcb)
+	{
+		ERR("fread");
 		free(fib->base);
 		free(fib->rgW97);
 		free(fib->rgLw97);
@@ -233,7 +251,12 @@ static int _doc_fib_init(Fib *fib, FILE *fp, struct cfb *cfb){
 	LOG("read Fib.cswNew");
 #endif	
 	//read Fib.cswNew
-	fread(&(fib->cswNew), 2, 1, fp);
+	if (fread(&(fib->cswNew), 2, 1,
+				fp) != 1)
+	{
+		ERR("fread");
+		return -1;
+	}
 
 #ifdef DEBUG
 	LOG("cswNew: 0x%x", fib->cswNew);
@@ -244,7 +267,8 @@ static int _doc_fib_init(Fib *fib, FILE *fp, struct cfb *cfb){
 
 	if (fib->cswNew > 0){
 		//allocate FibRgCswNew
-		fib->rgCswNew = (FibRgCswNew *)MALLOC(fib->cswNew * 2,
+		fib->rgCswNew = 
+			(FibRgCswNew *)MALLOC(fib->cswNew * 2,
 		  ERR("malloc");
 			free(fib->base);
 			free(fib->rgW97);
@@ -256,7 +280,10 @@ static int _doc_fib_init(Fib *fib, FILE *fp, struct cfb *cfb){
 	LOG("read FibRgCswNew");
 #endif		
 		//read FibRgCswNew
-		if (fread(fib->rgCswNew, 2, fib->cswNew, fp) != fib->cswNew){
+		if (fread(fib->rgCswNew, 2, fib->cswNew,
+					fp) != fib->cswNew)
+		{
+			ERR("fread");
 			free(fib->base);
 			free(fib->rgW97);
 			free(fib->rgLw97);
@@ -326,7 +353,9 @@ int _plcpcd_init(struct PlcPcd * PlcPcd, uint32_t len, cfb_doc_t *doc){
 	//read aCP
 	i=0;
 	uint32_t ch;
-	while(fread(&ch, 4, 1, doc->Table) == 1){
+	while(fread(&ch, 4, 1,
+				doc->Table) == 1)
+	{
 		if (doc->biteOrder){
 			ch = bswap_32(ch);
 		}
@@ -371,9 +400,24 @@ int _plcpcd_init(struct PlcPcd * PlcPcd, uint32_t len, cfb_doc_t *doc){
 	for (i = 0; i < PlcPcd->aPcdl; ++i) {
 		uint64_t ch;
 		struct Pcd Pcd;
-		fread(&Pcd.ABCfR2, 2, 1, doc->Table);
-		fread(&Pcd.fc.fc, 4, 1, doc->Table);
-		fread(&Pcd.prm, 2, 1, doc->Table);
+		if (fread(&Pcd.ABCfR2, 2, 1,
+					doc->Table) != 1)
+		{
+			ERR("fread");
+			return -1;
+		}
+		if (fread(&Pcd.fc.fc, 4, 1,
+					doc->Table) != 1)
+		{
+			ERR("fread");
+			return -1;
+		}
+		if (fread(&Pcd.prm, 2, 1,
+					doc->Table) != 1)
+		{
+			ERR("fread");
+			return -1;
+		}
 		if (doc->biteOrder){
 			Pcd.ABCfR2 = bswap_16(Pcd.ABCfR2);
 			Pcd.fc.fc = bswap_32(Pcd.fc.fc);
@@ -428,7 +472,12 @@ static int _clx_init(cfb_doc_t *doc)
 	//get clx
 	uint8_t ch;
 	fseek(doc->Table, fcClx, SEEK_SET);
-	fread(&ch, 1, 1, doc->Table);
+	if (fread(&ch, 1, 1, 
+				doc->Table) != 1)
+	{
+		ERR("fread");
+		return -1;
+	}
 #ifdef DEBUG
 	LOG("first bite of CLX: 0x%x", ch);
 #endif
@@ -443,7 +492,12 @@ static int _clx_init(cfb_doc_t *doc)
 				return DOC_ERR_ALLOC);
 		
 		int16_t cbGrpprl; //the first 2 bite of PrcData - signed integer
-		fread(&cbGrpprl, 2, 1, doc->Table);
+		if (fread(&cbGrpprl, 2, 1, 
+					doc->Table) != 1)
+		{
+			ERR("fread");
+			return -1;
+		}
 		if (doc->biteOrder){
 			cbGrpprl = bswap_16(cbGrpprl);
 		}
@@ -468,15 +522,24 @@ static int _clx_init(cfb_doc_t *doc)
 #ifdef DEBUG
 	LOG("read GrpPrl");
 #endif		
-		fread(clx->RgPrc->data->GrpPrl,
-			 	cbGrpprl, 1, doc->Table);
+		if (fread(clx->RgPrc->data->GrpPrl,
+			 	cbGrpprl, 1, doc->Table) != 1)
+		{
+			ERR("fread");
+			return -1;
+		}
 		/* TODO:  parse GrpPrl + byteOrder */
 
 		//read ch again
 #ifdef DEBUG
 	LOG("again first bite of CLX: 0x%x", ch);
 #endif		
-		fread(&ch, 1, 1, doc->Table);
+		if (fread(&ch, 1, 1, 
+					doc->Table) != 1)
+		{
+			ERR("fread");
+			return NULL;
+		}
 	}	
 
 	//get PlcPcd
@@ -495,8 +558,12 @@ static int _clx_init(cfb_doc_t *doc)
 	}
 
 	//read lcb;
-	fread(&(clx->Pcdt->lcb), 
-			4, 1, doc->Table);	
+	if (fread(&(clx->Pcdt->lcb), 
+			4, 1, doc->Table) != 1)
+	{
+		ERR("fread");
+		return NULL;
+	}
 	if (doc->biteOrder){
 		clx->Pcdt->lcb = bswap_32(clx->Pcdt->lcb);
 	}
@@ -662,7 +729,7 @@ void doc_close(cfb_doc_t *doc)
 		if (doc->plcbtePapx)
 			free(doc->plcbtePapx);
 		if (doc->STSH)
-			stsh_free(doc->STSH);
+			STSH_free(doc->STSH);
 		
 		if (doc->clx.Pcdt){
 			if (doc->clx.Pcdt->PlcPcd.aCp)
