@@ -2,7 +2,7 @@
  * File              : retrieving_text.c
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 26.05.2024
- * Last Modified Date: 28.05.2024
+ * Last Modified Date: 29.05.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
  */
 #include "../include/libdoc/retrieving_text.h"
@@ -57,7 +57,12 @@ void get_char_for_cp(cfb_doc_t *doc, CP cp,
 
 		fseek(doc->WordDocument, off, SEEK_SET);	
 		int ch;
-		fread(&ch, 1, 1, doc->WordDocument);			
+		if (fread(&ch, 1, 1, 
+					doc->WordDocument) != 1)
+		{
+			ERR("fread");
+			return;
+		}
 		// check special chars
 		int sch = FcCompressedSpecialChar_get(ch);
 		if (sch)
@@ -84,7 +89,12 @@ void get_char_for_cp(cfb_doc_t *doc, CP cp,
 		
 		fseek(doc->WordDocument, off, SEEK_SET);	
 		WORD u;
-		fread(&u, 2, 1, doc->WordDocument);
+		if (fread(&u, 2, 1, 
+					doc->WordDocument) != 1)
+		{
+			ERR("fread");
+			return;
+		}
 		if (doc->biteOrder){
 			u = bswap_16(u);
 		}
@@ -99,8 +109,12 @@ void get_char_for_cp(cfb_doc_t *doc, CP cp,
 			if (u > 0x1f && u < 0x7f) {
 				//simple ANSI
 				int ch;
-				fread(&ch, 1, 1,
-						doc->WordDocument);			
+				if (fread(&ch, 1, 1,
+						doc->WordDocument) != 1)
+				{
+					ERR("fread");
+					return;
+				}
 				callback(user_data, &doc->prop, ch);
 			} else {
 				//this is a mark

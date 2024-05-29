@@ -56,7 +56,7 @@ void apply_style_properties(cfb_doc_t *doc, USHORT istd)
 
 /* 4. Read the STD structure as LPStd.std, of length
  * LPStd.cbStd bytes. */
-	struct STD *STD = LPStd->STD;
+	struct STD *STD = (struct STD *)LPStd->STD;
 
 /* 5. From the STD.stdf.stdfBase obtain istdBase. If
  * istdBase is any value other than 0x0FFF, then

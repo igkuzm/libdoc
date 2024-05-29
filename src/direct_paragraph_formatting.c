@@ -92,8 +92,12 @@ void direct_paragraph_formatting(
 
 	struct GrpPrlAndIstd *grpPrlAndIstd = MALLOC(size, 
 			ERR("malloc"); return);
-	fread(grpPrlAndIstd, size, 1,
-			doc->WordDocument);
+	if (fread(grpPrlAndIstd, size, 1,
+			doc->WordDocument) != 1)
+	{
+		ERR("fread");
+		return;
+	}
 
 #ifdef DEBUG
 	LOG("Istd: %d", grpPrlAndIstd->istd);

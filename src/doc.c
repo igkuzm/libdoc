@@ -538,7 +538,7 @@ static int _clx_init(cfb_doc_t *doc)
 					doc->Table) != 1)
 		{
 			ERR("fread");
-			return NULL;
+			return -1;
 		}
 	}	
 
@@ -562,7 +562,7 @@ static int _clx_init(cfb_doc_t *doc)
 			4, 1, doc->Table) != 1)
 	{
 		ERR("fread");
-		return NULL;
+		return -1;
 	}
 	if (doc->biteOrder){
 		clx->Pcdt->lcb = bswap_32(clx->Pcdt->lcb);

@@ -103,16 +103,24 @@ void direct_character_formatting(
 	BYTE cb;
 	fseek(doc->WordDocument, offset,
 		 	SEEK_SET);
-	fread(&cb, 1, 1,
-		 	doc->WordDocument);
+	if (fread(&cb, 1, 1,
+		 	doc->WordDocument) != 1)
+	{
+		ERR("fread");
+		return;
+	}
 #ifdef DEBUG
 	LOG("cb: %d", cb);
 #endif
 
 	/* GrpPrl has size of chpx.cb */
 	BYTE grpprl[cb];	
-	fread(grpprl, cb, 1, 
-			doc->WordDocument);
+	if (fread(grpprl, cb, 1, 
+			doc->WordDocument) != 1)
+	{
+		ERR("fread");
+		return;
+	}
 
 #ifdef DEBUG
 	char str[BUFSIZ] = "grpprl: ";
