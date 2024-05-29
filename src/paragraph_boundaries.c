@@ -2,7 +2,7 @@
  * File              : paragraph_boundaries.c
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 26.05.2024
- * Last Modified Date: 28.05.2024
+ * Last Modified Date: 29.05.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
  */
 
@@ -163,7 +163,7 @@ first_cp_in_paragraph_8:
 CP last_cp_in_paragraph(cfb_doc_t *doc, CP cp)
 {
 #ifdef DEBUG
-	LOG("start\n");
+	LOG("start");
 #endif
 	CP lcp = CPERROR;
 	struct PapxFkp *papxFkp = NULL;

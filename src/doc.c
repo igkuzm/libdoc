@@ -2,7 +2,7 @@
  * File              : doc.c
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 26.05.2024
- * Last Modified Date: 28.05.2024
+ * Last Modified Date: 29.05.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
  */
 
@@ -286,7 +286,7 @@ static FILE *_table_stream(cfb_doc_t *doc, struct cfb *cfb){
 	if (FibBaseG(fib[0].base))
 		table = (char *)"1Table";
 #ifdef DEBUG
-	LOG("table name: %s\n", table);
+	LOG("table name: %s", table);
 #endif	
 	return cfb_get_stream(cfb, table);
 }

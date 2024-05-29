@@ -2,7 +2,7 @@
  * File              : direct_paragraph_formatting.c
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 26.05.2024
- * Last Modified Date: 28.05.2024
+ * Last Modified Date: 29.05.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
 */
 
@@ -25,7 +25,7 @@ void direct_paragraph_formatting(
 		uint32_t of, struct Pcd *pcd)
 {
 #ifdef DEBUG
-	LOG("start\n");
+	LOG("start");
 #endif
 
 /* 1. Follow the algorithm from Determining Paragraph
