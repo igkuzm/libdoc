@@ -2,7 +2,7 @@
  * File              : doc.h
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 04.11.2022
- * Last Modified Date: 28.05.2024
+ * Last Modified Date: 29.05.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
  */
 
@@ -3424,7 +3424,7 @@ struct Clx {
 
 /* The PnFkpPapx structure specifies the offset of a PapxFkp 
  * in the WordDocument Stream.*/
-typedef ULONG PnFkpPapx;
+typedef LONG PnFkpPapx;
 /* pn (22 bits): An unsigned integer that specifies the 
  * offset in the WordDocument Stream of a PapxFkp structure. 
  * The PapxFkp structure begins at an offset of pn×512.
@@ -3434,7 +3434,6 @@ static ULONG pnFkpPapx_pn(PnFkpPapx p)
 {
 	return p & 0x3FFFFF;
 }
-
 
 typedef ULONG PnFkpChpx;
 static ULONG pnFkpChpx_pn(PnFkpChpx p)
@@ -3461,7 +3460,7 @@ struct PlcBteChpx {
 											 //range. As with all PLCs, the
 											 //elements of aFC MUST be sorted in
 											 //ascending order
-	ULONG *aPnBteChpx;//aPnBteChpx (variable): An array of
+	ULONG *aPnBteChpx;   //aPnBteChpx (variable): An array of
 											 //PnFkpChpx (4 bytes each). Each
 											 //element of this array specifies
 											 //the location in the WordDocument
@@ -3471,26 +3470,37 @@ struct PlcBteChpx {
 											 //corresponding offset in aFC
 };
 static struct PlcBteChpx * plcbteChpx_get(
-		FILE *fp, ULONG offset, ULONG size, int *naFc)
+		FILE *fp, ULONG offset, ULONG size, int *n)
 {
-	// get PlcBtePapx data
-	void * p = 
-		MALLOC(size, ERR("malloc"); exit(ENOMEM)); 
+	// get PlcBteChpx data
+	BYTE * p = (BYTE *)MALLOC(size,
+			ERR("malloc"); 
+			exit(ENOMEM)); 
 	fseek(fp, offset, SEEK_SET);
 	fread(p, size, 1, fp);
 
 	// get nuber of aFc;
-	int n = (size/4 - 1)/2 + 1;
+	*n = (size/4 - 1)/2 + 1;
 
 	struct PlcBteChpx *plcbteChpx = 
 		NEW(struct PlcBteChpx, 
-				ERR("malloc"); exit(ENOMEM));
+				ERR("malloc"); 
+				exit(ENOMEM));
 
 	plcbteChpx->aFc = (ULONG *)p;	
-	plcbteChpx->aPnBteChpx = (ULONG *)(p) + n;
-	if (naFc)
-		*naFc = n;
-
+	plcbteChpx->aPnBteChpx = (ULONG *)(p) + *n;
+#ifdef DEBUG
+	LOG("PlcbtePapx->aFc count: %d", *n);
+	int i;
+	for (i = 0; i < *n; ++i) {
+		LOG("PlcbteChpx->aFc[%d]: %d", 
+				i, plcbteChpx->aFc[i]);
+	}
+	for (i = 0; i < *n - 1; ++i) {
+		LOG("PlcbteChpx->aPnBtePapx[%d]: %d", 
+				i, plcbteChpx->aPnBteChpx[i]);
+	}
+#endif
 	return plcbteChpx;
 }
 
@@ -3504,14 +3514,14 @@ static void plcbteChpx_free(struct PlcBteChpx *p){
 
 
 struct PlcBtePapx {
- ULONG *aFc; // An array of unsigned integers. Each
+ ULONG *aFc;     // An array of unsigned integers. Each
 								// element in this array specifies an offset
 								// in the
 								// WordDocument stream. The elements of aFC
 								// MUST be sorted in ascending order, and
 								// there MUST
 								// NOT be any duplicate entries	
- PnFkpPapx *aPnBtePapx;
+ ULONG *aPnBtePapx;
                 // An array of PnFkpPapx. The ith entry in
 								// aPnBtePapx is a PnFkpPapx that
 								// specifies the properties of all
@@ -3524,26 +3534,40 @@ struct PlcBtePapx {
 								// less entry than aFC 
 };
 static struct PlcBtePapx * plcbtePapx_get(
-		FILE *fp, ULONG offset, ULONG size, int *naFc)
+		FILE *fp, ULONG offset, ULONG size, int *n)
 {
+#ifdef DEBUG
+	LOG("start");
+#endif
 	// get PlcBtePapx data
-	void * p = 
-		MALLOC(size, ERR("malloc"); exit(ENOMEM)); 
+	BYTE *p = (BYTE *)MALLOC(size,
+			ERR("malloc"); 
+			exit(ENOMEM)); 
 	fseek(fp, offset, SEEK_SET);
 	fread(p, size, 1, fp);
 
 	// get nuber of aFc;
-	int n = (size/4 - 1)/2 + 1;
+	*n = (size/4 - 1)/2 + 1;
 
 	struct PlcBtePapx *plcbtePapx = 
-		(struct PlcBtePapx *)MALLOC(
-				sizeof(struct PlcBtePapx), 
-				ERR("malloc"); exit(ENOMEM));
+		NEW(struct PlcBtePapx, 
+				ERR("malloc"); 
+				exit(ENOMEM));
 
 	plcbtePapx->aFc = (ULONG *)p;	
-	plcbtePapx->aPnBtePapx = (ULONG *)(p) + n;
-	if (naFc)
-		*naFc = n;
+	plcbtePapx->aPnBtePapx = (ULONG *)p + *n;
+#ifdef DEBUG
+	LOG("PlcbtePapx->aFc count: %d", *n);
+	int i;
+	for (i = 0; i < *n; ++i) {
+		LOG("PlcbtePapx->aFc[%d]: %d", 
+				i, plcbtePapx->aFc[i]);
+	}
+	for (i = 0; i < *n - 1; ++i) {
+		LOG("PlcbtePapx->aPnBtePapx[%d]: %d", 
+				i, plcbtePapx->aPnBtePapx[i]);
+	}
+#endif
 
 	return plcbtePapx;
 }
@@ -3648,7 +3672,7 @@ struct PapxFkp {
 									 // a paragraph; instead it specifies the
 									 // end of the last paragraph.
 									 //
-	BYTE *rgbx;   // An array of BxPap, followed by
+	struct BxPap *rgbx; // An array of BxPap, followed by
 									 // PapxInFkp structures. The elements of
 									 // this array,
 									 // which has cpara elements and parallels
@@ -3673,17 +3697,31 @@ struct PapxFkp {
 static struct PapxFkp * papxFkp_get(
 		FILE *fp, ULONG offset)
 {
-	void *p = MALLOC(512, ERR("malloc"); exit(ENOMEM));
+	BYTE *p = (BYTE *)MALLOC(512,
+			ERR("malloc"); 
+			exit(ENOMEM));
 	fseek(fp, offset, SEEK_SET);
 	fread(p, 512, 1, fp);
 
-	struct PapxFkp *s =	(struct PapxFkp *)MALLOC(
-			sizeof(struct PapxFkp), 
-			ERR("malloc"); exit(ENOMEM));
-	s->cpara = ((BYTE *)p)[511];
-	s->rgfc = (ULONG *)p;
-	s->rgbx = &(((BYTE *)p)[s->cpara + 1]);
-	return s;
+	struct PapxFkp *st =	NEW(
+			struct PapxFkp, 
+			ERR("malloc"); 
+			exit(ENOMEM));
+	st->cpara = p[511];
+	st->rgfc = (ULONG *)p;
+	void *ptr = &(p[(st->cpara + 1)*4]);
+	st->rgbx = (struct BxPap *)ptr;
+#ifdef DEBUG
+LOG("PapxFkp->cpara: %d", st->cpara);
+int i;
+for (i = 0; i < st->cpara+1; ++i) {
+	LOG("PapxFkp.rgfc[%d]: %d ", i, st->rgfc[i]);	
+}
+for (i = 0; i < st->cpara; ++i) {
+	LOG("rgbx[%d].bOffset: %d ", i, st->rgbx[i].bOffset);	
+}
+#endif
+	return st;
 }
 static void papxFkp_free(struct PapxFkp *p)
 {
@@ -3746,27 +3784,27 @@ struct ChpxFkp {
 static struct ChpxFkp * chpxFkp_get(
 		FILE *fp, ULONG offset)
 {
-	void *p = MALLOC(512, ERR("malloc"); exit(ENOMEM));
+	BYTE *p = (BYTE *)MALLOC(512,
+			ERR("malloc"); 
+			exit(ENOMEM));
 	fseek(fp, offset, SEEK_SET);
 	fread(p, 512, 1, fp);
 
 	struct ChpxFkp *st =	NEW(struct ChpxFkp, 
-			ERR("malloc"); exit(ENOMEM));
-	st->crun = ((BYTE *)p)[511];
+			ERR("malloc"); 
+			exit(ENOMEM));
+	st->crun = p[511];
 	st->rgfc = (ULONG *)p;
-	st->rgb  = &(((BYTE *)p)[st->crun + 1]);
+	st->rgb  = &(p[(st->crun + 1)*4]);
 #ifdef DEBUG
-LOG("chpxFkp->crun: %d", st->crun);
-char str[BUFSIZ] = "ChpxFkp:\nrgfc: ";
+LOG("ChpxFkp->cpara: %d", st->crun);
 int i;
 for (i = 0; i < st->crun+1; ++i) {
-	STRFCAT(str, "%d ", st->rgfc[i]);	
+	LOG("ChpxFkp.rgfc[%d]: %d ", i, st->rgfc[i]);	
 }
-strcat(str, "\nrgb: ");
-for (i = 0; i < 512 - (st->crun + 1)*4; ++i) {
-	STRFCAT(str, "%d ", st->rgb[i]);	
+for (i = 0; i < st->crun; ++i) {
+	LOG("rgb[%d]: %d ", i, st->rgb[i]);	
 }
-LOG("%s", str);
 #endif
 	return st;
 }
@@ -4009,7 +4047,7 @@ struct LPStd {
 									//include this padding.
 									//A style definition can be empty, in
 									//which case cbStd MUST be 0.
-	int8_t std[];   //std (variable): An STD that specifies
+	int8_t STD[];   //std (variable): An STD that specifies
 									//the style definition.
 };
 
@@ -4059,31 +4097,76 @@ struct STSH {
 										//(see sti in StdfBase)
 };
 
-static struct STSH *stsh_get(FILE *fp, 
-		ULONG off, ULONG size, int *lstshi)
+static struct STSH *STSH_get(FILE *fp, 
+		ULONG off, ULONG size, int *n)
 {
-	struct STSH *stsh = NEW(struct STSH, 
-			ERR("malloc stsh"); return NULL);
-
-	BYTE *data = (BYTE *)MALLOC(size, 
-			ERR("malloc data"); return NULL);
+	struct STSH *STSH = NEW(struct STSH, 
+			ERR("malloc stsh"); 
+			return NULL);
 
 	fseek(fp, off, SEEK_SET);
-	fread(data, size, 1, fp);
+	USHORT cbStshi;
+	fread(&cbStshi, 2, 1, fp);
+#ifdef DEBUG
+	LOG("cbStshi: %d", cbStshi);
+#endif
+	if (!cbStshi){
+		ERR("something wrong... cbStd is 0");
+		return NULL;
+	}
 
-	stsh->lpstshi = (struct LPStshi *)data;
-	*lstshi = stsh->lpstshi->cbStshi + 2;
-	stsh->rglpstd = &(data[*lstshi]);
+	STSH->lpstshi = (struct LPStshi *)MALLOC(
+			cbStshi + 2, 
+			ERR("malloc");
+			exit(ENOMEM));
+	STSH->lpstshi->cbStshi = cbStshi;
+	fread(STSH->lpstshi->stshi, cbStshi, 1,
+			fp);
 
-	return stsh;
+	// get len of rglpstd
+	*n = size - cbStshi - 2;
+#ifdef DEBUG
+	LOG("STSH rglpstd len: %d", *n);
+#endif
+	
+	STSH->rglpstd = (BYTE *)MALLOC(*n, 
+			ERR("malloc");
+			exit(ENOMEM));
+	fread(STSH->rglpstd, *n, 1,
+			fp);
+
+	return STSH;
 }
 
-static void stsh_free(struct STSH *stsh){
+static void STSH_free(struct STSH *stsh){
 	if (stsh){
 		if (stsh->lpstshi)
 			free(stsh->lpstshi);
 		free(stsh);
 	}
+}
+
+static LPStd *LPStd_at_index(BYTE *rglpstd, int size, 
+		int index)
+{
+	int i, k;
+	for (i = 0, k = 0; i < size; ++i, ++k) {
+		if (k == index)
+			break;
+
+		void *p = &(rglpstd[i]); 
+		// read cbStd
+		USHORT *cbStd = (USHORT *)p;
+		
+		// skeep next cbStd bytes
+		i += *cbStd;
+	}
+
+	if (i != index)
+		return NULL;
+
+	void *p = &(rglpstd[i]); 
+	return (LPStd *)p;	
 }
 
 /*
@@ -4103,7 +4186,7 @@ typedef struct cfb_doc
 	struct PlcBteChpx *plcbteChpx;
 	int plcbteChpxNaFc;   // number of aFc in plcbteChpx
 	struct STSH *STSH;    // style sheet 
-	int lstshi;           // length of STSH->stshi
+	int lrglpstd;         // len of rglpstd
 	ldp_t prop;           // properties
 } cfb_doc_t;
 

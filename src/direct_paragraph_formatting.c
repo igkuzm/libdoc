@@ -22,10 +22,11 @@ static int callback(void *userdata, struct Prl *prl);
  * of Prl elements. */
 void direct_paragraph_formatting(
 		cfb_doc_t *doc, int k, struct PapxFkp *papxFkp,
-		uint32_t of, struct Pcd *pcd)
+		ULONG of, struct Pcd *pcd)
 {
 #ifdef DEBUG
-	LOG("start");
+	LOG("start for PapxFkp at offset: %d for k: %d",
+			of, k);
 #endif
 
 /* 1. Follow the algorithm from Determining Paragraph
@@ -41,28 +42,38 @@ void direct_paragraph_formatting(
 
 /* 2. Find a BxPap at PapxFkp.rgbx[k]. Find a PapxInFkp at
  * offset of + 2*BxPap.bOffset */
-	void *pBxPap = &(papxFkp->rgbx[k]);
-	struct BxPap *bxPap = (struct BxPap *)pBxPap;
-	uint8_t offset = of + 2 * bxPap->bOffset;
+	ULONG offset = of + (2 * papxFkp->rgbx[k].bOffset);
+#ifdef DEBUG
+	LOG("papxFkp->rgbx[k].bOffset: %d", 
+			papxFkp->rgbx[k].bOffset);
+	LOG("PapxInFkp at offset: %d", offset);
+#endif
+	fseek(doc->WordDocument, offset,
+			SEEK_SET);
 	
-	MEM *mem = memopen(papxFkp, 512);	
-	memseek(mem, offset, SEEK_SET);
-
 /* 3. Find a GrpprlAndIstd in the PapxInFkp from step 2.
  * The offset and size of the GrpprlAndIstd
  * is instructed by the first byte of the PapxInFkp, as
  * detailed at PapxInFkp. */
 
 	int size = 0;
-	uint8_t cb;
-	memread(&cb, 1, 1, mem);	
+	BYTE cb;
+	fread(&cb, 1, 1,
+			doc->WordDocument);	
+#ifdef DEBUG
+	LOG("PapxInFkp cb: %d", cb);
+#endif
 	if (cb){
 		// cb is not 0
 		size += 2*cb - 1;
 	} else {
 		// cb is 0
-		uint8_t cb_;
-		memread(&cb_, 1, 1, mem);	
+		BYTE cb_;
+		fread(&cb_, 1, 1,
+				doc->WordDocument);	
+#ifdef DEBUG
+	LOG("PapxInFkp cb': %d", cb_);
+#endif
 		if (cb_ < 1) {
 			// error
 			ERR("cb' MUST be at least 1");
@@ -73,20 +84,20 @@ void direct_paragraph_formatting(
 
 	struct GrpPrlAndIstd *grpPrlAndIstd = MALLOC(size, 
 			ERR("malloc"); return);
-	memread(grpPrlAndIstd, size, 1, mem);
+	fread(grpPrlAndIstd, size, 1,
+			doc->WordDocument);
 
 #ifdef DEBUG
 	LOG("Istd: %d", grpPrlAndIstd->istd);
-	char str[BUFSIZ] = "grpprl: ";
+	char str[BUFSIZ] = "grpprl data: ";
 	for (int i = 0; i < size-2; ++i) {
 		STRFCAT(str, "%d ", grpPrlAndIstd->grpprl[i]);	
 	}
 	LOG("%s", str);
 #endif
 	
-	/* TODO:  <28-05-24, yourname> */
-	// apply style properties ??
-	//apply_style_properties(doc, grpPrlAndIstd->istd);	
+	// apply style properties
+	apply_style_properties(doc, grpPrlAndIstd->istd);	
 
 /* 4. Find the grpprl within the GrpprlAndIstd. This is an
  * array of Prl elements that specifies the

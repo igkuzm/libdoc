@@ -2,7 +2,7 @@
  * File              : doc_parse.c
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 26.05.2024
- * Last Modified Date: 28.05.2024
+ * Last Modified Date: 29.05.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
  */
 #include "../include/libdoc.h"
@@ -57,7 +57,7 @@ for (cp = 0; cp < doc.fib.rgLw97->ccpText; ) {
 	memset(&(doc.prop.pap), 0, sizeof(PAP));
 
 	// iterate cp
-	while (cp <= lcp){
+	while (cp <= lcp && cp < doc.fib.rgLw97->ccpText){
 		get_char_for_cp(&doc, cp, user_data,
 				main_document);
 		cp++;

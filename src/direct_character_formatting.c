@@ -2,7 +2,7 @@
  * File              : direct_character_formatting.c
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 27.05.2024
- * Last Modified Date: 28.05.2024
+ * Last Modified Date: 29.05.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
  */
 
@@ -27,7 +27,7 @@ static int callback(void *userdata, struct Prl *prl);
  * section 2.4.6.6 Determining Formatting
  * Properties. */
 void direct_character_formatting(
-		cfb_doc_t *doc, uint32_t fc, struct Pcd *pcd)
+		cfb_doc_t *doc, ULONG fc, struct Pcd *pcd)
 {
 #ifdef DEBUG
 	LOG("start");
@@ -57,7 +57,8 @@ void direct_character_formatting(
 	i--;
 
 #ifdef DEBUG
-	LOG("plcbteChpx->aFc[%d]: %d", i, plcbteChpx->aFc[i]);
+	LOG("plcbteChpx->aFc[%d]: %d", 
+			i, plcbteChpx->aFc[i]);
 #endif
 
 	if (plcbteChpx->aFc[doc->plcbteChpxNaFc - 1] <= fc){
@@ -69,7 +70,7 @@ void direct_character_formatting(
 		return;
 	}
 
-	uint32_t chpxFkp_fc = pnFkpChpx_pn(
+	ULONG chpxFkp_fc = pnFkpChpx_pn(
 					doc->plcbteChpx->aPnBteChpx[i]) * 512;
 #ifdef DEBUG
 	LOG("chpxFkp offset: %d", chpxFkp_fc);
@@ -98,8 +99,8 @@ void direct_character_formatting(
 		return;
 	}
 
-	uint32_t offset = chpxFkp->rgb[j] * 2 + chpxFkp_fc;
-	uint8_t cb;
+	ULONG offset = chpxFkp->rgb[j] * 2 + chpxFkp_fc;
+	BYTE cb;
 	fseek(doc->WordDocument, offset,
 		 	SEEK_SET);
 	fread(&cb, 1, 1,
@@ -109,7 +110,7 @@ void direct_character_formatting(
 #endif
 
 	/* GrpPrl has size of chpx.cb */
-	uint8_t grpprl[cb];	
+	BYTE grpprl[cb];	
 	fread(grpprl, cb, 1, 
 			doc->WordDocument);
 

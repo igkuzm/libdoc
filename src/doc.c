@@ -536,18 +536,6 @@ static int _doc_plcBtePapx_init(cfb_doc_t *doc){
 		ERR("can't read PlcBtePapx");
 		return -1;
 	}
-#ifdef DEBUG
-	LOG("plcbtePapx:");
-	char str[BUFSIZ] = "";
-	for (int i = 0; i < doc->plcbtePapxNaFc*2 - 1; ++i) {
-		char s[16];
-		sprintf(s, "%d ", 
-				doc->plcbtePapx->aFc[i]);
-		strcat(str, s);
-	}
-	LOG("%s", str);
-#endif
-
 	return 0;
 }
 
@@ -587,10 +575,10 @@ static int _doc_STSH_init(cfb_doc_t *doc){
 #endif
 	FibRgFcLcb97 *fibRgFcLcb97 = 
 		(FibRgFcLcb97 *)(doc->fib.rgFcLcb);
-	doc->STSH = stsh_get(doc->Table, 
+	doc->STSH = STSH_get(doc->Table, 
 			fibRgFcLcb97->fcStshf, 
 			fibRgFcLcb97->lcbStshf, 
-			&doc->lstshi);
+			&doc->lrglpstd);
 	
 	if (!doc->STSH){
 		ERR("can't read PlcBteChpx");

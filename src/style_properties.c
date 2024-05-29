@@ -2,7 +2,7 @@
  * File              : style_properties.c
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 28.05.2024
- * Last Modified Date: 28.05.2024
+ * Last Modified Date: 29.05.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
  */
 
@@ -22,7 +22,7 @@
  * paragraphs, and characters. */
 
 /* Given an istd: */
-void apply_style_properties(cfb_doc_t *doc, uint16_t istd)
+void apply_style_properties(cfb_doc_t *doc, USHORT istd)
 {
 /* 1. Read the FIB from offset zero in the WordDocument
  * Stream. */
@@ -33,31 +33,25 @@ void apply_style_properties(cfb_doc_t *doc, uint16_t istd)
  * structure. Read a STSH from offset FibRgFcLcb97.fcStshf
  * in the Table Stream with size
  * FibRgFcLcb97.lcbStshf. */
-	FibRgFcLcb97 *rgFcLcb97 = (FibRgFcLcb97 *)(fib->rgFcLcb);
 	struct STSH *STSH = doc->STSH;
 
 /* 3. The given istd is a zero-based index into
  * STSH.rglpstd. Read an LPStd at STSH.rglpstd[istd]. */
-	MEM *mem = memopen(doc->STSH->lpstshi, 
-			rgFcLcb97->lcbStshf - doc->lstshi);	
+	struct LPStd *LPStd = 
+		LPStd_at_index(STSH->rglpstd, 
+				doc->lrglpstd, istd);
+	if (!LPStd){
+		return;
+	}
 
-	int i = 0;
-	uint16_t cbStd;
-	while (memread(&cbStd, 1, 1, mem))
-		if (i++ != istd)
-			// skipping
-			memseek(mem, cbStd, SEEK_CUR);
-
-	// check if we have istd
-	if (--i != istd){
-		ERR("no style with istd 0x%04x in STSH stylesheet", istd);
+	if (LPStd->cbStd == 0){
 		return;
 	}
 
 /* 4. Read the STD structure as LPStd.std, of length
  * LPStd.cbStd bytes. */
-	uint8_t STD[cbStd];
-	memread(STD, cbStd, 1, mem);
+	BYTE STD[LPStd->cbStd];
+	memcpy(STD, LPStd->STD, LPStd->cbStd);
 
 /* 5. From the STD.stdf.stdfBase obtain istdBase. If
  * istdBase is any value other than 0x0FFF, then
@@ -67,7 +61,7 @@ void apply_style_properties(cfb_doc_t *doc, uint16_t istd)
  * properties for tables, paragraphs and
  * characters from the base style. */
 	struct StdfBase *stdfBase = (struct StdfBase *)STD;
-	uint16_t istdBase = StdfBaseIstdBase(stdfBase);
+	USHORT istdBase = StdfBaseIstdBase(stdfBase);
 	if (istdBase != 0x0FFF){
 		// recursion 
 #ifdef DEBUG

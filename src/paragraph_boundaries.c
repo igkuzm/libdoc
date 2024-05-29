@@ -30,7 +30,7 @@ CP first_cp_in_paragraph(cfb_doc_t *doc, CP cp)
 	struct PapxFkp *papxFkp = NULL;
 	struct Pcd *pcd = NULL;
 	int k=0;
-	uint32_t of=0;
+	ULONG of=0;
 
 /* 1. Follow the algorithm from Retrieving Text up to and 
  * including step 3 to find i. Also remember the 
@@ -52,9 +52,9 @@ CP first_cp_in_paragraph(cfb_doc_t *doc, CP cp)
 /* 3. Let fcPcd be Pcd.fc.fc. Let fc be 
  * fcPcd + 2(cp – PlcPcd.aCp[i]). If Pcd.fc.fCompressed is 
  * one, set fc to fc / 2, and set fcPcd to fcPcd/2. */
-		//uint32_t fcPcd = FcValue(pcd->fc);
-		uint32_t fcPcd = FcValue(pcd->fc);
-		uint32_t fc = fcPcd + 2*(cp - plcPcd->aCp[i]); 
+		//ULONG fcPcd = FcValue(pcd->fc);
+		ULONG fcPcd = FcValue(pcd->fc);
+		ULONG fc = fcPcd + 2*(cp - plcPcd->aCp[i]); 
 		if (FcCompressed(pcd->fc)){
 			fcPcd /= 2;
 			fc /= 2;
@@ -64,9 +64,9 @@ CP first_cp_in_paragraph(cfb_doc_t *doc, CP cp)
  * in the Table Stream, and of size FibRgFcLcb97.lcbPlcfBtePapx.
  * Let fcLast be the last element of plcbtePapx.aFc. */
 	 
-		uint32_t fcLast = 
+		ULONG fcLast = 
 			doc->plcbtePapx->aFc[doc->plcbtePapxNaFc-1];
-		uint32_t fcFirst;
+		ULONG fcFirst;
 
 /* If fcLast is less than or equal to fc, examine fcPcd. 
  * If fcLast is less than fcPcd, go to step 8. Otherwise, 
@@ -123,7 +123,7 @@ first_cp_in_paragraph_7:
  * the paragraph is at character position
  * PlcPcd.aCp[i] + dfc. Leave the algorithm. */
 		if (fcFirst > fcPcd){
-			uint32_t dfc = fcFirst - fcPcd;
+			ULONG dfc = fcFirst - fcPcd;
 			if (!FcCompressed(pcd->fc))
 				dfc /= 2;
 			fcp = plcPcd->aCp[i] + dfc;
@@ -169,7 +169,7 @@ CP last_cp_in_paragraph(cfb_doc_t *doc, CP cp)
 	struct PapxFkp *papxFkp = NULL;
 	struct Pcd *pcd = NULL;
 	int k=0;
-	uint32_t of=0;
+	ULONG of=0;
 
 /* 1. Follow the algorithm from Retrieving Text up to and
  * including step 3 to find i. Also remember the
@@ -195,9 +195,9 @@ CP last_cp_in_paragraph(cfb_doc_t *doc, CP cp)
  * is one, set fc to fc/2, set fcPcd to
  * fcPcd /2 and set fcMac to fcMac/2 */
 
-		uint32_t fcPcd = FcValue(pcd->fc);
-		uint32_t fc = fcPcd + 2 * (cp - plcPcd->aCp[i]);
-		uint32_t fcMac = fcPcd + 2 * (plcPcd->aCp[i+1] - 
+		ULONG fcPcd = FcValue(pcd->fc);
+		ULONG fc = fcPcd + 2 * (cp - plcPcd->aCp[i]);
+		ULONG fcMac = fcPcd + 2 * (plcPcd->aCp[i+1] - 
 				plcPcd->aCp[i]);
 		if (FcCompressed(pcd->fc)){
 			fc /= 2;
@@ -243,7 +243,7 @@ CP last_cp_in_paragraph(cfb_doc_t *doc, CP cp)
 					" range of character positions in this document");
 			return CPERROR;
 		}
-		uint32_t fcLim = papxFkp->rgfc[k+1];
+		ULONG fcLim = papxFkp->rgfc[k+1];
 		
 /* 6. If fcLim ≤ fcMac, then let dfc be (fcLim – fcPcd). If
  * Pcd.fc.fCompressed is zero, then set dfc
@@ -251,7 +251,7 @@ CP last_cp_in_paragraph(cfb_doc_t *doc, CP cp)
  * character position PlcPcd.aCp[i] + dfc – 1.
  * Leave the algorithm. */
 		if (fcLim <= fcMac){
-			uint32_t dfc = fcLim - fcPcd;
+			ULONG dfc = fcLim - fcPcd;
 			if (!FcCompressed(pcd->fc)){
 				dfc /= 2;
 				lcp = plcPcd->aCp[i] + dfc - 1;
