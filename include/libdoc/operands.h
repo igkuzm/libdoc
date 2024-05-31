@@ -2,7 +2,7 @@
  * File              : operands.h
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 28.05.2024
- * Last Modified Date: 29.05.2024
+ * Last Modified Date: 31.05.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
  */
 
@@ -91,5 +91,78 @@ static const COLOR *Ico(BYTE operand)
 	ERR("no color with Ico: 0x%02x", operand);
 	return NULL;
 }
-				
+
+/* 2.9.123 ItcFirstLim
+ * The ItcFirstLim structure specifies a range of cells in a
+ * table row. The range is inclusive of the first
+ * index, and exclusive of the second. The first cell in a
+ * row is at index 0. The maximum number of cells
+ * in a row is 63.*/
+struct ItcFirstLim {
+	BYTE itcFirst; //itcFirst (8 bits): An integer value that
+								 //specifies the index of the first cell in
+								 //a contiguous range. The
+								 //cell at this index is inside the range.
+								 //This value MUST be non-negative and MUST
+								 //be less than the
+								 //number of cells in the row.
+	BYTE itcLim;   //itcLim (8 bits): An integer value that
+								 //specifies the index of the first cell
+								 //beyond the contiguous
+								 //range. The cell at this index is outside
+								 //the range. This value MUST be greater
+								 //than or equal to
+								 //itcFirst and MUST be less than or equal
+								 //to the number of cells in the row. When
+								 //itcLim is equal
+								 //to itcFirst, the range contains zero
+								 //cells.
+};
+
+/* 2.9.45 CSSA
+ * The CSSA structure specifies a cell spacing SPRM argument
+ * used by many Table SPRMs to define table
+ * cell margins and cell spacing.*/
+struct CSSA {
+	struct ItcFirstLim itc; 
+							//itc (2 bytes): An ItcFirstLim that specifies
+							//which cells this CSSA structure applies to.
+	BYTE grfbrc;//grfbrc (1 byte): A bit field that specifies
+							//which cell sides this cell margin or cell
+							//spacing applies to.
+							//The bit values and their meanings are as
+							//follows.
+							//Name Bit Mask Meaning
+							//fbrcTop 0x01 Specifies the top side.
+							//fbrcLeft 0x02 Specifies the left side.
+							//fbrcBottom 0x04 Specifies the bottom side.
+							//fbrcRight 0x08 Specifies the right side.
+							//Setting all four side bits results in
+							//fBrcSidesOnly (0x0F). All other bits MUST be
+							//0.
+	BYTE ftsWidth;//ftsWidth (1 byte): An Fts that specifies
+								//how wWidth is defined.
+	USHORT wWidth;//wWidth (2 bytes): An unsigned integer
+								//value that specifies the cell margin or
+								//cell spacing that is
+								//applied to cells itc.itcFirst through
+								//itc.itcLim – 1. The interpretation of this
+								//value depends on the
+								//value of ftsWidth. If ftsWidth is ftsNil
+								//(0x00), then wWidth MUST be zero.
+};
+
+/* 2.9.46 CSSAOperand
+ * The CSSAOperand structure is an operand that is used by
+ * several Table SPRMs to specify a table cell
+ * margin or cell spacing.*/
+struct CSSAOperand {
+	BYTE cb;   //cb (1 byte): An unsigned integer value that
+						 //specifies the size of this operand in bytes,
+						 //not including
+						 //cb. The cb MUST be 6.
+	struct CSSA cssa; //cssa (6 bytes): A CSSA that specifies the
+						 //cell margin or cell spacing to apply.
+};
+
 #endif /* ifndef OPERANDS_H */

@@ -2,7 +2,7 @@
  * File              : libdoc.h
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 27.05.2024
- * Last Modified Date: 28.05.2024
+ * Last Modified Date: 30.05.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
  */
 
@@ -72,6 +72,7 @@ typedef struct libdoc_prop {
 	DOP dop;
 	SEP sep;
 	PAP pap;
+	CHP pap_chp;
 	CHP chp;
 	TRP trp;
 	TCP tcp;

@@ -52,7 +52,7 @@ void apply_style_properties(cfb_doc_t *doc, USHORT istd)
 
 	if (LPStd->cbStd == 0){
 #ifdef DEBUG
-	LOG("STD at index %d is 0 - skiping...", istd);
+	LOG("STD at index %d is 0 size - skiping...", istd);
 #endif
 		return;
 	}
@@ -178,6 +178,40 @@ void apply_style_properties(cfb_doc_t *doc, USHORT istd)
 				// revision marking prop
 				if (cpux == 3){
 					fc += cbUpx;
+					
+					// check padding 
+					if(cbUpx % 2 != 0)
+						fc++;
+				
+
+					/* TODO:  parse StkParaLpUpxGrLpUpxRM */
+				}
+			}
+			break;
+		case stkCha:
+			{
+				struct  LPUpxChpx *pupxChpx =
+					(struct LPUpxChpx *)ptr;
+				
+				USHORT cbUpx = pupxChpx->cbUpx; 
+				#ifdef DEBUG
+					LOG("UpxChpx len: %d", len);
+				#endif
+				
+				parse_grpprl(
+				(BYTE *)(pupxChpx->CHPX), 
+				cbUpx, 
+				doc, callback);
+
+				// revision marking prop
+				if (cpux == 2){
+					int fc = 2;
+					fc += cbUpx;
+					
+					// check padding 
+					if(cbUpx % 2 != 0)
+						fc++;
+				
 					/* TODO:  parse StkParaLpUpxGrLpUpxRM */
 				}
 			}
@@ -199,6 +233,6 @@ void apply_style_properties(cfb_doc_t *doc, USHORT istd)
 int callback(void *userdata, struct Prl *prl){
 	// parse properties
 	cfb_doc_t *doc = userdata;
-	apply_property(doc, prl);
+	apply_property(doc, 1, prl);
 	return 0;
 }

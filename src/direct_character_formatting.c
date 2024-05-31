@@ -2,7 +2,7 @@
  * File              : direct_character_formatting.c
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 27.05.2024
- * Last Modified Date: 29.05.2024
+ * Last Modified Date: 30.05.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
  */
 
@@ -14,6 +14,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+static void set_to_default(cfb_doc_t *doc){
+	CHP *chp = &(doc->prop.chp);
+
+	chp->fBold      = doc->prop.pap_chp.fBold;
+	chp->fUnderline = doc->prop.pap_chp.fUnderline;
+	chp->fItalic    = doc->prop.pap_chp.fItalic;
+	chp->font       = doc->prop.pap_chp.font;
+	chp->size       = doc->prop.pap_chp.size;
+	chp->fcolor     = doc->prop.pap_chp.fcolor;
+	chp->bcolor     = doc->prop.pap_chp.bcolor;
+	chp->allCaps    = doc->prop.pap_chp.allCaps;
+}
 
 static int callback(void *userdata, struct Prl *prl);
 /* 2.4.6.2 Direct Character Formatting
@@ -32,6 +45,8 @@ void direct_character_formatting(
 #ifdef DEBUG
 	LOG("start");
 #endif
+
+	set_to_default(doc);
 
 /* 1. Follow the algorithm from Retrieving Text. From step 5
  * or 6, determine the offset in the
@@ -154,6 +169,6 @@ void direct_character_formatting(
 int callback(void *userdata, struct Prl *prl){
 	// parse properties
 	cfb_doc_t *doc = userdata;
-	apply_property(doc, prl);
+	apply_property(doc, 0, prl);
 	return 0;
 }

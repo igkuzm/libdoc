@@ -36,12 +36,59 @@ enum {
 	sprmCIstdPermute      = 0x31,
 	sprmCPlain            = 0x33,
 	sprmCKcd              = 0x34,
-	sprmCFBold            = 0x35,
-	sprmCFItalic          = 0x36,
-	sprmCFStrike          = 0x37,
-	sprmCFOutline         = 0x38,
+
+	sprmCFBold            = 0x35, //0x35 A ToggleOperand value
+																//that specifies whether the
+																//text is bold. By default,
+																//text is not bold.
+
+	sprmCFItalic          = 0x36, //0x36 A ToggleOperand value
+																//that specifies whether the
+																//text is italicized. By
+																//default, text is not
+																//italicized.
+
+	sprmCFStrike          = 0x37, //0x37 A ToggleOperand value
+																//that specifies whether the
+																//text is formatted with
+																//strikethrough. By default,
+																//text is not struck
+																//through.
+
+	sprmCFOutline         = 0x38, //0x38 A ToggleOperand value
+																//that specifies whether
+																//only the outline contour
+																//of
+																//the characters in the text
+																//is rendered, with the
+																//inside of each character
+																//left
+																//empty. By default, text is
+																//rendered in normal solid
+																//characters. If
+																//sprmCFEmboss, or
+																//sprmCFImprint is true,
+																//then sprmCFOutline MUST
+																//be false.
+
 	sprmCFShadow          = 0x39,
-	sprmCFSmallCaps       = 0x3A,
+
+	sprmCFSmallCaps       = 0x3A, //0x3A A ToggleOperand value
+																//that specifies whether the
+																//text characters are
+																//displayed as their capital
+																//letter equivalents, in a
+																//font size that is smaller
+																//than
+																//the actual font size that
+																//is specified for this
+																//text. It does not affect
+																//any
+																//nonalphabetic character.
+																//By default, the characters
+																//are displayed in their
+																//original character form.
+
 	sprmCFCaps            = 0x3B,
 	sprmCFVanish          = 0x3C,
 	sprmCKul              = 0x3E,
@@ -70,7 +117,37 @@ enum {
 	sprmCFtcBi            = 0x5E,
 	sprmCLidBi            = 0x5F,
 	sprmCIcoBi            = 0x60,
-	sprmCHpsBi            = 0x61,
+
+	sprmCHpsBi            = 0x61, //0x61 An unsigned 2-byte
+																//integer value that
+																//specifies the size of the
+																//text, for text
+																//that is displayed
+																//right-to-left or text that
+																//is a complex script. This
+																//value is
+																//specified in half-points.
+																//The specified value MUST
+																//be between 0 and 3276. By
+																//default, text of the
+																//following Unicode
+																//subranges uses the
+																//associated size, in
+																//half points, as specified
+																//in [MC-USB].
+																// Thai, Mongolian, and
+																//Bangla use a font size of
+																//28.
+																// Tibetan uses a font size
+																//of 32.
+																// Devanagari uses a font
+																//size of 20.
+																// Khmer uses a font size
+																//of 36.
+																//Text of other Unicode
+																//subranges uses a font size
+																//of 24 half points.
+
 	sprmCDispFldRMark     = 0x62,
 	sprmCIbstRMarkDel     = 0x63,
 	sprmCDttmRMarkDel     = 0x64,
@@ -108,7 +185,41 @@ enum {
 	sprmPIstd               = 0x00,
 	sprmPIstdPermute        = 0x01,
 	sprmPIncLvl             = 0x02,
-	sprmPJc80               = 0x03,
+
+	sprmPJc80               = 0x03, //0x03 An unsigned 8-bit
+																	//integer that specifies
+																	//the physical
+																	//justification of the
+																	//paragraph. This MUST be
+																	//one of the following
+																	//values.
+																	//0 - Paragraph is
+																	//physically left
+																	//justified.
+																	//1 - Paragraph is
+																	//centered.
+																	//2 - Paragraph is
+																	//physically right
+																	//justified.
+																	//3 - Paragraph is
+																	//justified to both right
+																	//and left with a low
+																	//character compression
+																	//ratio.
+																	//4 - Paragraph is
+																	//justified to both right
+																	//and left with a medium
+																	//character compression
+																	//ratio.
+																	//5 - Paragraph is
+																	//justified to both right
+																	//and left with a high
+																	//character compression
+																	//ratio.
+																	//By default, paragraphs
+																	//are physically
+																	//left-justified.
+
 	sprmPFKeep              = 0x05,
 	sprmPFKeepFollow        = 0x06,
 	sprmPFPageBreakBefore   = 0x07,
@@ -121,8 +232,39 @@ enum {
 	sprmPNest80             = 0x10,
 	sprmPDxaLeft180         = 0x11,
 	sprmPDyaLine            = 0x12,
-	sprmPDyaBefore          = 0x13,
-	sprmPDyaAfter           = 0x14,
+	sprmPDyaBefore          = 0x13, //0x13 A two-byte unsigned
+																	//integer value that
+																	//specifies the size, in
+																	//twips, of
+																	//the spacing before this
+																	//paragraph. The value
+																	//MUST be a number
+																	//between 0x0000 and
+																	//0x7BC0, inclusive. When
+																	//auto-spacing is
+																	//supported and the value
+																	//of sprmPFDyaBeforeAuto
+																	//is 1, this property is
+																	//ignored. By default, the
+																	//space before a paragraph
+																	//is zero twips.
+
+	sprmPDyaAfter           = 0x14, //0x14 A two-byte unsigned
+																	//integer value that
+																	//specifies the size, in
+																	//twips, of
+																	//the spacing after this
+																	//paragraph. The value
+																	//MUST be between 0x0000
+																	//and 0x7BC0, inclusive.
+																	//When auto spacing is
+																	//supported and the value
+																	//of sprmPFDyaAfterAuto is
+																	//1, this property is
+																	//ignored. By default, the
+																	//space after a paragraph
+																	//is zero twips.
+
 	sprmPChgTabs            = 0x15,
 	sprmPFInTable           = 0x16,
 	sprmPFTtp               = 0x17,
@@ -177,12 +319,109 @@ enum {
 	sprmPDylAfter           = 0x59,
 	sprmPFOpenTch           = 0x5A,
 	sprmPFDyaBeforeAuto     = 0x5B,
-	sprmPFDyaAfterAuto      = 0x5C,
+
+	sprmPFDyaAfterAuto      = 0x5C, //0x5C A Bool8 value that
+																	//specifies whether the
+																	//space displayed after
+																	//this
+																	//paragraph uses auto
+																	//spacing. A value of 1
+																	//specifies that
+																	//sprmPDyaAfter
+																	//MUST be ignored if the
+																	//application supports
+																	//auto spacing. By
+																	//default,
+																	//auto spacing is disabled
+																	//for paragraphs.
+
 	sprmPDxaRight           = 0x5D,
 	sprmPDxaLeft            = 0x5E,
 	sprmPNest               = 0x5F,
 	sprmPDxaLeft1           = 0x60,
-	sprmPJc                 = 0x61,
+
+	sprmPJc                 = 0x61, //0x61 An unsigned 8-bit
+																	//integer value that
+																	//specifies the logical
+																	//justification of
+																	//the paragraph. The value
+																	//MUST be one of those
+																	//listed following. Some
+																	//of the values also
+																	//correspond to the ST_Jc
+																	//enumeration values that
+																	//are specified in
+																	//[ECMA-376] Part 4,
+																	//Section 2.18.50 ST_Jc
+																	//(Horizontal
+																	//Alignment Type).
+																	//0
+																	//St_Jc: left
+																	//Paragraph is logical
+																	//left justified
+																	//1
+																	//St_Jc: center
+																	//Paragraph is centered
+																	//2
+																	//St_Jc: right
+																	//Paragraph is logical
+																	//right justified
+																	//3
+																	//St_Jc: both
+																	//Paragraph is justified
+																	//to both right and left
+																	//4
+																	//St_Jc:distribute
+																	//Paragraph characters are
+																	//distributed to fill the
+																	//entire width of
+																	//the paragraph
+																	//5
+																	//St_Jc: mediumKashida
+																	//If the language is
+																	//Arabic, the paragraph
+																	//uses medium-length
+																	//Kashida. In other
+																	//languages, text is
+																	//justified with a medium
+																	//character compression
+																	//ratio.
+																	//6
+																	//Paragraph is indented
+																	//7
+																	//St_Jc: highKashida
+																	//If the language is
+																	//Arabic, the paragraph
+																	//uses longer length
+																	//Kashida. In other
+																	//languages, text is
+																	//justified with a high
+																	//character compression
+																	//ratio.
+																	//8
+																	//St_Jc: lowKashida
+																	//If the language is
+																	//Arabic, the paragraph
+																	//uses small length
+																	//Kashida. In other
+																	//languages, text is
+																	//justified with a high
+																	//character compression
+																	//ratio.
+																	//9
+																	//St_Jc:thaiDistribute
+																	//If the language of the
+																	//paragraph is Thai, the
+																	//text is justified
+																	//with Thai distributed
+																	//justification. In other
+																	//languages, text is
+																	//justified with a low
+																	//character compression
+																	//ratio.
+																	//The default is logical
+																	//left justification.
+	
 	sprmPFNoAllowOverlap    = 0x62,
 	sprmPWall               = 0x64,
 	sprmPIpgp               = 0x65,
@@ -200,7 +439,29 @@ enum {
 /* 2.6.3 Table Properties
  * A Prl with a sprm.sgc of 5 modifies a table property.*/
 enum {
-	sprmTJc90                = 0x00,
+	sprmTJc90                = 0x00, //0x00 An unsigned 16-bit
+																	 //integer value that
+																	 //specifies the physical
+																	 //justification of
+																	 //the table. The valid
+																	 //values and their
+																	 //meanings are as
+																	 //follows.
+																	 //0 - The table is
+																	 //physical left
+																	 //justified.
+																	 //1 - The table is
+																	 //centered.
+																	 //2 - The table is
+																	 //physical right
+																	 //justified.
+																	 //Tables do not have a
+																	 //default physical
+																	 //justification. Their
+																	 //default
+																	 //justification is
+																	 //logical left.
+	
 	sprmTDxaLeft             = 0x01,
 	sprmTDxaGapHalf          = 0x02,
 	sprmTFCantSplit90        = 0x03,
@@ -244,7 +505,27 @@ enum {
 	sprmTSetShdOdd           = 0x2E,
 	sprmTSetBrc              = 0x2F,
 	sprmTCellPadding         = 0x32,
-	sprmTCellSpacingDefault  = 0x33,
+
+	sprmTCellSpacingDefault  = 0x33, //0x33 A CSSAOperand that
+																	 //specifies the cell
+																	 //spacing for each cell
+																	 //in the entire
+																	 //row. cssa.itc.itcFirst
+																	 //MUST be 0,
+																	 //cssa.itc.itcLim MUST be
+																	 //1,
+																	 //cssa.grfbrc MUST be
+																	 //fbrcSidesOnly (0x0F),
+																	 //cssa.ftsWidth MUST be
+																	 //ftsNil (0x00) or ftsDxa
+																	 //(0x03) or ftsDxaSys
+																	 //(0x13), and cssa.wWidth
+																	 //MUST be nonnegative and
+																	 //MUST NOT exceed 15840
+																	 //(11"). By default,
+																	 //cells do not have cell
+																	 //spacing.")
+
 	sprmTCellPaddingDefault  = 0x34,
 	sprmTCellWidth           = 0x35,
 	sprmTFitText             = 0x36,
@@ -312,7 +593,18 @@ enum {
 	sprmSPgnStart97    = 0x1C,
 	sprmSBOrientation  = 0x1D,
 	sprmSXaPage        = 0x1F,
-	sprmSYaPage        = 0x20,
+
+	sprmSYaPage        = 0x20, //0x20 An unsigned 16-bit
+														 //integer that specifies the
+														 //page height of the section,
+														 //in
+														 //twips. The value of the
+														 //operand MUST be in the
+														 //interval [144, 31680].
+														 //By default, the page height
+														 //is 279.4 mm (11 inches, or
+														 //15840 twips).
+
 	sprmSDxaLeft       = 0x21,
 	sprmSDxaRight      = 0x22,
 	sprmSDyaTop        = 0x23,
@@ -326,7 +618,27 @@ enum {
 	sprmSBrcBottom80   = 0x2D,
 	sprmSPgbProp       = 0x2F,
 	sprmSDxtCharSpace  = 0x30,
-	sprmSDyaLinePitch  = 0x31,
+
+	sprmSDyaLinePitch  = 0x31, //0x31 A YAS that specifies, in
+														 //twips, the line height that
+														 //is used for document grid, if
+														 //enabled (see sprmSClm). This
+														 //line height does not apply to
+														 //lines within table
+														 //cells in case the
+														 //fDontAdjustLineHeightInTable
+														 //flag is set in the document
+														 //Dop2000.
+														 //If the document grid is
+														 //enabled (see sprmSClm), a
+														 //section MUST specify the line
+														 //height that is used for the
+														 //document grid.
+														 //This value MUST be greater
+														 //than or equal to 1, and MUST
+														 //be less than or equal
+														 //to 31680.
+
 	sprmSClm           = 0x32,
 	sprmSTextFlow      = 0x33,
 	sprmSBrcTop        = 0x34,

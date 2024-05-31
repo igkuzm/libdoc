@@ -2,7 +2,7 @@
  * File              : doc_parse.c
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 26.05.2024
- * Last Modified Date: 29.05.2024
+ * Last Modified Date: 30.05.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
  */
 #include "../include/libdoc.h"
@@ -49,12 +49,9 @@ int doc_parse(const char *filename, void *user_data,
  * The last character in the main document MUST be a 
  * paragraph mark (Unicode 0x000D).*/
 for (cp = 0; cp < doc.fib.rgLw97->ccpText; ) {
+	
 	// get paragraph boundaries
 	CP lcp = last_cp_in_paragraph(&doc, cp); 
-
-	// set paragraph and char properties to default
-	memset(&(doc.prop.chp), 0, sizeof(CHP));
-	memset(&(doc.prop.pap), 0, sizeof(PAP));
 
 	// iterate cp
 	while (cp <= lcp && cp < doc.fib.rgLw97->ccpText){

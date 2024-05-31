@@ -2,16 +2,43 @@
  * File              : direct_paragraph_formatting.c
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 26.05.2024
- * Last Modified Date: 29.05.2024
+ * Last Modified Date: 30.05.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
 */
 
 #include "../include/libdoc/direct_paragraph_formatting.h"
 #include "../include/libdoc/apply_properties.h"
 #include "../include/libdoc/style_properties.h"
+#include "../include/mswordtype.h"
 #include "memread.h"
 #include <stdint.h>
 #include <stdio.h>
+
+static void set_to_default(cfb_doc_t *doc){
+	
+	PAP *pap = &(doc->prop.pap);
+
+	pap->fIntbl  = 0;
+	pap->xaLeft  = 0;
+	pap->xaRight = 0;
+	pap->xaFirst = 0;
+	pap->just    = 0;
+	pap->s       = 0;
+	pap->before  = 0;
+	pap->after   = 0;
+
+	CHP *chp = &(doc->prop.pap_chp);
+	
+	chp->fBold      = 0;
+	chp->fUnderline = 0;
+	chp->fItalic    = 0;
+	chp->font       = 0;
+	chp->size       = 0;
+	chp->fcolor     = 0;
+	chp->bcolor     = 0;
+	chp->allCaps    = 0;
+
+}
 
 static int callback(void *userdata, struct Prl *prl);
 /* 2.4.6.1 Direct Paragraph Formatting
@@ -28,6 +55,8 @@ void direct_paragraph_formatting(
 	LOG("start for PapxFkp at offset: %d for k: %d",
 			of, k);
 #endif
+
+	set_to_default(doc);
 
 /* 1. Follow the algorithm from Determining Paragraph
  * Boundaries for finding the character position of
@@ -74,7 +103,7 @@ void direct_paragraph_formatting(
 		// cb is 0
 		BYTE cb_;
 		if (fread(&cb_, 1, 1,
-				doc->WordDocument))
+				doc->WordDocument) != 1)
 		{
 			ERR("fread");
 			return;
@@ -135,6 +164,6 @@ void direct_paragraph_formatting(
 int callback(void *userdata, struct Prl *prl){
 	// parse properties
 	cfb_doc_t *doc = userdata;
-	apply_property(doc, prl);
+	apply_property(doc, 1, prl);
 	return 0;
 }

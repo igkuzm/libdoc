@@ -5,6 +5,7 @@
 #include "sprm.h"
 #include "prl.h"
 
-int apply_property(cfb_doc_t *doc, struct Prl *prl);
+// l = 0 for char, 1 for paragraph, 2 for section
+int apply_property(cfb_doc_t *doc, int l, struct Prl *prl);
 
 #endif /* ifndef APPLY_PROPERTIES_S */

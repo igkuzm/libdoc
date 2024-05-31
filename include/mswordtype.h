@@ -2,7 +2,7 @@
  * File              : mswordtype.h
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 17.01.2024
- * Last Modified Date: 28.05.2024
+ * Last Modified Date: 30.05.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
  */
 
@@ -64,6 +64,7 @@ typedef struct char_prop
 	int  size;
 	int  fcolor;
 	int  bcolor;
+	char allCaps;    // all capital symbols
 } CHP;               // CHaracter Properties
 
 /* Paragraph justification */
@@ -78,12 +79,14 @@ typedef enum {
 typedef struct para_prop
 {
 	char fIntbl;			 // if in table paragraph
-  int xaLeft;        // left indent in twips
-  int xaRight;       // right indent in twips
-	int xaFirst;       // first line indent in twips
+  int  xaLeft;        // left indent in twips
+  int  xaRight;       // right indent in twips
+	int  xaFirst;       // first line indent in twips
 	JUST just;         // justification
-	int s;             // paragraph style 
-} PAP;               // PAragraph Properties
+	int  s;             // paragraph style
+	int  before;        // spacing before paragraph
+	int  after;				 // spacing after paragraph
+}  PAP;               // PAragraph Properties
 
 /* Section break type */
 typedef enum {

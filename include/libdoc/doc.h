@@ -26,6 +26,7 @@ extern "C"{
 #include "../../ms-cfb/alloc.h"
 #include "../../ms-cfb/log.h"
 #include "../../ms-cfb/byteorder.h"
+#include "str.h"
 
 #define STRFCAT(str, ...) \
 ({ \
@@ -4416,7 +4417,17 @@ static struct STSH *STSH_get(FILE *fp,
 		return NULL;
 	}
 
+#ifdef DEBUG
+	struct str str;
+	str_init(&str, BUFSIZ);
+	str_appendf(&str, "STSH->rglpstd:\n");
+	for (int i = 0; i < *n; ++i) {
+		str_appendf(&str, "%d ", STSH->rglpstd[i]);
+	}
+	LOG("STSH->rglpstd:\n%s", str.str);
+#endif
 	return STSH;
+
 }
 
 static void STSH_free(struct STSH *stsh){
@@ -4431,19 +4442,25 @@ static struct LPStd *LPStd_at_index(
 		BYTE *rglpstd, int size, int index)
 {
 	int i, k;
-	for (i = 0, k = 0; i < size; ++i, ++k) {
+	for (i = 0, k = 0; i < size; ++k) {
+#ifdef DEBUG
+	LOG("looking for SDT at index: %d", k);
+#endif
 		if (k == index)
 			break;
 
 		void *p = &(rglpstd[i]); 
 		// read cbStd
 		USHORT *cbStd = (USHORT *)p;
+#ifdef DEBUG
+	LOG("SDT at index %d size: %d", k, *cbStd);
+#endif
 		
-		// skeep next cbStd bytes
-		i += *cbStd;
+		// skeep next cbStd bytes and 2 bytes of cbStd itself
+		i += *cbStd + 2;
 	}
 
-	if (i != index)
+	if (k != index)
 		return NULL;
 
 	void *p = &(rglpstd[i]); 
