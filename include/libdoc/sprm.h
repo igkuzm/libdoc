@@ -267,7 +267,8 @@ enum {
 
 	sprmPChgTabs            = 0x15,
 	sprmPFInTable           = 0x16,
-	sprmPFTtp               = 0x17,
+	sprmPFTtp               = 0x17, // terminating paragraph
+																	// mark
 	sprmPDxaAbs             = 0x18,
 	sprmPDyaAbs             = 0x19,
 	sprmPDxaWidth           = 0x1A,
@@ -373,7 +374,8 @@ enum {
 																	//4
 																	//St_Jc:distribute
 																	//Paragraph characters are
-																	//distributed to fill the
+																	//distributed to fill
+																	//the
 																	//entire width of
 																	//the paragraph
 																	//5
@@ -383,7 +385,8 @@ enum {
 																	//uses medium-length
 																	//Kashida. In other
 																	//languages, text is
-																	//justified with a medium
+																	//justified with a 
+																	//medium
 																	//character compression
 																	//ratio.
 																	//6
@@ -410,16 +413,20 @@ enum {
 																	//ratio.
 																	//9
 																	//St_Jc:thaiDistribute
-																	//If the language of the
-																	//paragraph is Thai, the
+																	//If the language of
+																	//the
+																	//paragraph is Thai,
+																	//the
 																	//text is justified
 																	//with Thai distributed
-																	//justification. In other
+																	//justification. In
+																	//other
 																	//languages, text is
 																	//justified with a low
 																	//character compression
 																	//ratio.
-																	//The default is logical
+																	//The default is
+																	//logical
 																	//left justification.
 	
 	sprmPFNoAllowOverlap    = 0x62,
@@ -506,24 +513,32 @@ enum {
 	sprmTSetBrc              = 0x2F,
 	sprmTCellPadding         = 0x32,
 
-	sprmTCellSpacingDefault  = 0x33, //0x33 A CSSAOperand that
-																	 //specifies the cell
-																	 //spacing for each cell
-																	 //in the entire
-																	 //row. cssa.itc.itcFirst
+	sprmTCellSpacingDefault  = 0x33, //0x33 A CSSAOperand
+																	 //that specifies the
+																	 //cell spacing for
+																	 //each
+																	 //cell in the entire
+																	 //row. cssa.itc.
+																	 //itcFirst
 																	 //MUST be 0,
-																	 //cssa.itc.itcLim MUST be
-																	 //1,
-																	 //cssa.grfbrc MUST be
-																	 //fbrcSidesOnly (0x0F),
-																	 //cssa.ftsWidth MUST be
-																	 //ftsNil (0x00) or ftsDxa
-																	 //(0x03) or ftsDxaSys
-																	 //(0x13), and cssa.wWidth
-																	 //MUST be nonnegative and
-																	 //MUST NOT exceed 15840
+																	 //cssa.itc.itcLim MUST
+																	 //be 1, cssa.grfbrc
+																	 //MUST
+																	 //be fbrcSidesOnly
+																	 //(0x0F), 
+																	 //cssa.ftsWidth
+																	 //MUST be ftsNil
+																	 //(0x00)
+																	 //or ftsDxa (0x03) 
+																	 //or
+																	 //ftsDxaSys (0x13),
+																	 //and
+																	 //cssa.wWidth MUST be
+																	 //nonnegative and MUST
+																	 //NOT exceed 15840
 																	 //(11"). By default,
-																	 //cells do not have cell
+																	 //cells do not have
+																	 //cell
 																	 //spacing.")
 
 	sprmTCellPaddingDefault  = 0x34,
@@ -596,12 +611,14 @@ enum {
 
 	sprmSYaPage        = 0x20, //0x20 An unsigned 16-bit
 														 //integer that specifies the
-														 //page height of the section,
+														 //page height of the
+														 //section,
 														 //in
 														 //twips. The value of the
 														 //operand MUST be in the
 														 //interval [144, 31680].
-														 //By default, the page height
+														 //By default, the page
+														 //height
 														 //is 279.4 mm (11 inches, or
 														 //15840 twips).
 
@@ -619,25 +636,29 @@ enum {
 	sprmSPgbProp       = 0x2F,
 	sprmSDxtCharSpace  = 0x30,
 
-	sprmSDyaLinePitch  = 0x31, //0x31 A YAS that specifies, in
-														 //twips, the line height that
-														 //is used for document grid, if
-														 //enabled (see sprmSClm). This
-														 //line height does not apply to
-														 //lines within table
-														 //cells in case the
+	sprmSDyaLinePitch  = 0x31, //0x31 A YAS that specifies,
+														 //in twips, the line height
+														 //that is used for document
+														 //grid, if enabled (see
+														 //sprmSClm). This line
+														 //height
+														 //does not apply to lines
+														 //within table cells in case
+														 //the
 														 //fDontAdjustLineHeightInTable
-														 //flag is set in the document
-														 //Dop2000.
-														 //If the document grid is
-														 //enabled (see sprmSClm), a
-														 //section MUST specify the line
-														 //height that is used for the
-														 //document grid.
-														 //This value MUST be greater
-														 //than or equal to 1, and MUST
-														 //be less than or equal
-														 //to 31680.
+														 //flag is set in the
+														 //document
+														 //Dop2000.  If the document
+														 //grid is enabled (see
+														 //sprmSClm), a section MUST
+														 //specify the line height
+														 //that
+														 //is used for the document
+														 //grid.  This value MUST be
+														 //greater than or equal 
+														 //to 1,
+														 //and MUST be less than or
+														 //equal to 31680.
 
 	sprmSClm           = 0x32,
 	sprmSTextFlow      = 0x33,
@@ -659,7 +680,8 @@ enum {
 };
 
 /* 2.6.5 Picture Properties
- * A Prl with a sprm.sgc of 3 modifies a picture property.*/
+ * A Prl with a sprm.sgc of 3 modifies a picture
+ * property.*/
 enum {
 	sprmPicBrcTop80    = 0x02,
 	sprmPicBrcLeft80   = 0x03,

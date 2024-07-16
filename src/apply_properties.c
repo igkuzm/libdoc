@@ -2,7 +2,7 @@
  * File              : apply_properties.c
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 28.05.2024
- * Last Modified Date: 30.05.2024
+ * Last Modified Date: 16.07.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
  */
 
@@ -152,6 +152,35 @@ int apply_paragraph_property(
 		return 0;
 	}
 
+	// table terminating paragraph mark
+	if (ismpd == sprmPFTtp){
+		BYTE *n = prl->operand;	
+		if (*n)
+			doc->prop.pap.TTP = fTrue;
+		else
+			doc->prop.pap.TTP = fFalse;
+		return 0;
+	}
+
+	// inner table terminating paragraph mark
+	if (ismpd == sprmPFInnerTtp){
+		BYTE *n = prl->operand;	
+		if (*n)
+			doc->prop.pap.ITTP = fTrue;
+		else
+			doc->prop.pap.ITTP = fFalse;
+		return 0;
+	}
+
+	// inner table cell mark
+	if (ismpd == sprmPFInnerTableCell){
+		BYTE *n = prl->operand;	
+		if (*n)
+			doc->prop.pap.ITC = fTrue;
+		else
+			doc->prop.pap.ITC = fFalse;
+		return 0;
+	}
 
 #ifdef DEBUG
 	LOG("no rule to parse ismpd: 0x%04x", ismpd); 
@@ -193,7 +222,6 @@ int apply_table_property(
 		}
 		return 0;
 	}
-
 
 #ifdef DEBUG
 	LOG("no rule to parse ismpd: 0x%04x", ismpd); 
