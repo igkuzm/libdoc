@@ -325,14 +325,17 @@ int apply_table_property(
 #endif
 		struct TDefTableOperand *t = TDefTableOperandInit(prl);	
 		if (t){
-#ifdef DEBUG
-	LOG("NumberOfColumns: %d", t->NumberOfColumns); 
-#endif
 			doc->prop.trp.ncellx = t->NumberOfColumns;
+			XAS *axas = (SHORT *)(t->rgdxaCenter);
+			// first cell left indent = axas[0];
+			/*! TODO: first cell left indent */
 			int i;
-			for (i = 0; i < t->NumberOfColumns; ++i) {
-				XAS xas = t->rgdxaCenter[i];
-				doc->prop.trp.cellx[i] = xas;
+			for (i = 1; i < t->NumberOfColumns+1; ++i) {
+				XAS xas = axas[i];
+#ifdef DEBUG
+	LOG("Column %d has XAS: %d", i-1, xas); 
+#endif
+				doc->prop.trp.cellx[i-1] = xas;
 			}
 		}
 		
