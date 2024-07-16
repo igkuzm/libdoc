@@ -319,8 +319,15 @@ int apply_table_property(
 
 	// table defaults
 	if (ismpd == sprmTDefTable){
+#ifdef DEBUG
+	LOG("Size of TDefTableOperand: %d", *((SHORT *)(prl->operand))); 
+	LOG("NumberOfColumns: %d", prl->operand[2]); 
+#endif
 		struct TDefTableOperand *t = TDefTableOperandInit(prl);	
 		if (t){
+#ifdef DEBUG
+	LOG("NumberOfColumns: %d", t->NumberOfColumns); 
+#endif
 			doc->prop.trp.ncellx = t->NumberOfColumns;
 			int i;
 			for (i = 0; i < t->NumberOfColumns; ++i) {
