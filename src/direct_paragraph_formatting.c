@@ -2,7 +2,7 @@
  * File              : direct_paragraph_formatting.c
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 26.05.2024
- * Last Modified Date: 30.05.2024
+ * Last Modified Date: 17.07.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
 */
 
@@ -87,12 +87,7 @@ void direct_paragraph_formatting(
 
 	int size = 0;
 	BYTE cb;
-	if (!fread(&cb, 1, 1,
-				doc->WordDocument))
-	{
-		ERR("fread");
-		return;
-	};	
+	fread(&cb, 1, 1,doc->WordDocument);
 #ifdef DEBUG
 	LOG("PapxInFkp cb: %d", cb);
 #endif
@@ -102,12 +97,8 @@ void direct_paragraph_formatting(
 	} else {
 		// cb is 0
 		BYTE cb_;
-		if (fread(&cb_, 1, 1,
-				doc->WordDocument) != 1)
-		{
-			ERR("fread");
-			return;
-		};	
+		fread(&cb_, 1, 1,
+				doc->WordDocument);
 #ifdef DEBUG
 	LOG("PapxInFkp cb': %d", cb_);
 #endif
@@ -121,12 +112,8 @@ void direct_paragraph_formatting(
 
 	struct GrpPrlAndIstd *grpPrlAndIstd = MALLOC(size, 
 			ERR("malloc"); return);
-	if (fread(grpPrlAndIstd, size, 1,
-			doc->WordDocument) != 1)
-	{
-		ERR("fread");
-		return;
-	}
+	fread(grpPrlAndIstd, size, 1,
+			doc->WordDocument);
 
 #ifdef DEBUG
 	LOG("Istd: %d", grpPrlAndIstd->istd);
