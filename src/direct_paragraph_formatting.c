@@ -19,6 +19,7 @@ static void set_to_default(cfb_doc_t *doc){
 	PAP *pap = &(doc->prop.pap);
 
 	pap->fIntbl  = 0;
+	pap->Itap    = 0;
 	pap->xaLeft  = 0;
 	pap->xaRight = 0;
 	pap->xaFirst = 0;

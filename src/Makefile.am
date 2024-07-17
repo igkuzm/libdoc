@@ -21,6 +21,7 @@ doc2txt_CFLAGS = -g
 doc2txt_LDADD = libdoc.la
 
 libdoc_la_SOURCES = cell_boundaries.c \
+										row_boundaries.c \
 										direct_paragraph_formatting.c \
 										direct_character_formatting.c \
 									  doc.c \

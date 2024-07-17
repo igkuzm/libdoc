@@ -2,7 +2,7 @@
  * File              : apply_properties.c
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 28.05.2024
- * Last Modified Date: 16.07.2024
+ * Last Modified Date: 17.07.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
  */
 
@@ -156,9 +156,9 @@ int apply_paragraph_property(
 	if (ismpd == sprmPFTtp){
 		BYTE *n = prl->operand;	
 		if (*n)
-			doc->prop.pap.TTP = fTrue;
+			doc->prop.trp.TTP = fTrue;
 		else
-			doc->prop.pap.TTP = fFalse;
+			doc->prop.trp.TTP = fFalse;
 		return 0;
 	}
 
@@ -166,9 +166,9 @@ int apply_paragraph_property(
 	if (ismpd == sprmPFInnerTtp){
 		BYTE *n = prl->operand;	
 		if (*n)
-			doc->prop.pap.ITTP = fTrue;
+			doc->prop.trp.ITTP = fTrue;
 		else
-			doc->prop.pap.ITTP = fFalse;
+			doc->prop.trp.ITTP = fFalse;
 		return 0;
 	}
 
@@ -176,10 +176,19 @@ int apply_paragraph_property(
 	if (ismpd == sprmPFInnerTableCell){
 		BYTE *n = prl->operand;	
 		if (*n)
-			doc->prop.pap.ITC = fTrue;
+			doc->prop.tcp.ITC = fTrue;
 		else
-			doc->prop.pap.ITC = fFalse;
+			doc->prop.tcp.ITC = fFalse;
 		return 0;
+	}
+	
+	// in table depth
+	if (ismpd == sprmPItap || ismpd == sprmPDtap){
+		LONG *n = (LONG* )(prl->operand);
+		if (n > 0)
+			doc->prop.pap.Itap = *n;
+		else
+			doc->prop.pap.Itap = 0;
 	}
 
 #ifdef DEBUG

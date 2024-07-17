@@ -302,8 +302,32 @@ enum {
 	sprmPHugePapx           = 0x46,
 	sprmPFUsePgsuSettings   = 0x47,
 	sprmPFAdjustRight       = 0x48,
-	sprmPItap               = 0x49,
-	sprmPDtap               = 0x4A,
+	sprmPItap               = 0x49, //An integer value that
+																	//specifies the table
+																	//depth of this paragraph.
+																	//See
+																	//the Overview of Tables
+																	//(section 2.4.3) for the
+																	//rules that this value
+																	//follows. This value,
+																	//when present, MUST be a
+																	//non-negative number. By
+																	//default, paragraphs are
+																	//not in tables
+	sprmPDtap               = 0x4A, //A signed integer that
+																	//specifies an addition or
+																	//subtraction to the
+																	//existing
+																	//table depth of this
+																	//paragraph. It provides
+																	//an alternate way of
+																	//specifying table depth
+																	//to sprmPItap or a way to
+																	//increment or
+																	//decrement any value that
+																	//was already set by
+																	//sprmPItap or
+																	//sprmPDtap
 	sprmPFInnerTableCell    = 0x4B,
 	sprmPFInnerTtp          = 0x4C,
 	sprmPShd                = 0x4D,

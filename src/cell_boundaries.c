@@ -2,11 +2,13 @@
  * File              : cell_boundaries.c
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 26.05.2024
- * Last Modified Date: 28.05.2024
+ * Last Modified Date: 17.07.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
  */
 
 #include "../include/libdoc/cell_boundaries.h"
+#include "../include/libdoc/direct_paragraph_formatting.h"
+#include "../include/libdoc/paragraph_boundaries.h"
 
 /* 2.4.4 Determining Cell Boundaries
  * This section describes an algorithm to find the
@@ -19,7 +21,7 @@
  * zero, that paragraph is not in a table cell.
  * Given character position cp, use the following algorithm
  * to determine if cp is in a table cell.*/
-int get_cell_depth_for_cp(cfb_doc_t *doc, CP cp)
+CP last_cp_in_cell(cfb_doc_t *doc, CP cp)
 {
 /* 1. Follow the procedure from Direct Paragraph Formatting
  * to find the paragraph properties for the
@@ -27,6 +29,29 @@ int get_cell_depth_for_cp(cfb_doc_t *doc, CP cp)
  * determine the table depth as specified in
  * Overview of Tables. Call this itapOrig.*/
 
-	return 0;
+	cp = last_cp_in_paragraph(doc, cp);
+
+	if (doc->prop.pap.Itap > 0) {
+		
+		// check if TTP
+		if (doc->prop.trp.TTP)
+			return cp;
+
+		LONG itapOrig = doc->prop.pap.Itap;
+		
+		// get next paragraph last CP 
+		while (cp < doc->fib.rgLw97->ccpText){
+			cp = last_cp_in_paragraph(doc, cp+1);
+		
+			// check if TTP
+			if (doc->prop.trp.TTP)
+				return cp;
+			
+			if (itapOrig == doc->prop.pap.Itap)
+				return cp;
+		}
+	}
+
+	return CPERROR;
 }
 
