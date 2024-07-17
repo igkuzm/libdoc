@@ -17,7 +17,7 @@
 
 static void set_to_default(cfb_doc_t *doc){
 	CHP *chp = &(doc->prop.chp);
-
+	
 	chp->fBold      = doc->prop.pap_chp.fBold;
 	chp->fUnderline = doc->prop.pap_chp.fUnderline;
 	chp->fItalic    = doc->prop.pap_chp.fItalic;

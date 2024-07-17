@@ -13,28 +13,29 @@
 /* 2.4.5 Determining Row Boundaries */
 CP last_cp_in_row(cfb_doc_t *doc, CP cp)
 {
-	memset(&doc->prop.trp, 0, sizeof(TRP));
-	
 	cp = last_cp_in_paragraph(doc, cp);
 
 	if (doc->prop.pap.Itap > 0) {
 		
 		// check if TTP
-		if (doc->prop.trp.TTP)
+		if (doc->prop.pap.TTP)
 			return cp;
 
 		LONG itapOrig = doc->prop.pap.Itap;
 		
 		// get next paragraph last CP 
 		while (cp < doc->fib.rgLw97->ccpText){
+			
+			memset(&doc->prop.trp, 0, sizeof(TRP));
+			
 			cp = last_cp_in_paragraph(doc, cp+1);
 		
 			// check if TTP
-			if (doc->prop.trp.TTP)
+			if (doc->prop.pap.TTP)
 				return cp;
 			
 			if (itapOrig == doc->prop.pap.Itap &&
-					doc->prop.trp.ITTP)
+					doc->prop.pap.ITTP)
 				return cp;
 		}
 	}

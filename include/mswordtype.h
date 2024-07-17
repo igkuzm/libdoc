@@ -87,6 +87,10 @@ typedef struct para_prop
 	int  s;             // paragraph style
 	int  before;        // spacing before paragraph
 	int  after;				 // spacing after paragraph
+	// special marks
+	char TTP;  // table terminating paragraph mark 
+	char ITTP; // inner table terminating paragraph mark
+	char ITC;  // inner table cell mark
 }  PAP;               // PAragraph Properties
 
 /* Section break type */
@@ -164,9 +168,6 @@ typedef struct tbr_prop {
 	char header;      // this row is header
 	char keep;        // keep this row from pagebreak
 	char direction;   // 0 - left-to right, 1 - right to left
-	// special marks
-	char TTP;  // table terminating paragraph mark 
-	char ITTP; // inner table terminating paragraph mark
 } TRP;
 
 /* table cell properties */
@@ -183,7 +184,6 @@ typedef struct tbc_prop {
 	char clmgf;       // The first cell in a range of table cells to be merged
 	char clmrg;       // Contents of the table cell are merged with those of the 
 										// preceding cell
-	char ITC;  // inner table cell mark
 } TCP;
 
 /* charset */

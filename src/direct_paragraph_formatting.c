@@ -13,32 +13,16 @@
 #include "memread.h"
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 static void set_to_default(cfb_doc_t *doc){
 	
 	PAP *pap = &(doc->prop.pap);
-
-	pap->fIntbl  = 0;
-	pap->Itap    = 0;
-	pap->xaLeft  = 0;
-	pap->xaRight = 0;
-	pap->xaFirst = 0;
-	pap->just    = 0;
-	pap->s       = 0;
-	pap->before  = 0;
-	pap->after   = 0;
+	memset(pap, 0, sizeof(PAP));
 
 	CHP *chp = &(doc->prop.pap_chp);
+	memset(chp, 0, sizeof(CHP));
 	
-	chp->fBold      = 0;
-	chp->fUnderline = 0;
-	chp->fItalic    = 0;
-	chp->font       = 0;
-	chp->size       = 0;
-	chp->fcolor     = 0;
-	chp->bcolor     = 0;
-	chp->allCaps    = 0;
-
 }
 
 static int callback(void *userdata, struct Prl *prl);

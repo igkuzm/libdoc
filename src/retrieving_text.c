@@ -78,7 +78,7 @@ void get_char_for_cp(cfb_doc_t *doc, CP cp,
 		else
 			callback(user_data, &doc->prop, ch);
 		
-		check_marks(doc, ch);
+		//check_marks(doc, ch);
 
 	} else {
 /*
@@ -122,7 +122,7 @@ void get_char_for_cp(cfb_doc_t *doc, CP cp,
 			} else {
 				//this is a mark
 				callback(user_data, &doc->prop, u);
-				check_marks(doc, u);
+				//check_marks(doc, u);
 			}
 		} else if (u != 0xfeff) {
 			char utf8[4]={0};

@@ -156,9 +156,9 @@ int apply_paragraph_property(
 	if (ismpd == sprmPFTtp){
 		BYTE *n = prl->operand;	
 		if (*n)
-			doc->prop.trp.TTP = fTrue;
+			doc->prop.pap.TTP = fTrue;
 		else
-			doc->prop.trp.TTP = fFalse;
+			doc->prop.pap.TTP = fFalse;
 		return 0;
 	}
 
@@ -166,9 +166,9 @@ int apply_paragraph_property(
 	if (ismpd == sprmPFInnerTtp){
 		BYTE *n = prl->operand;	
 		if (*n)
-			doc->prop.trp.ITTP = fTrue;
+			doc->prop.pap.ITTP = fTrue;
 		else
-			doc->prop.trp.ITTP = fFalse;
+			doc->prop.pap.ITTP = fFalse;
 		return 0;
 	}
 
@@ -176,9 +176,9 @@ int apply_paragraph_property(
 	if (ismpd == sprmPFInnerTableCell){
 		BYTE *n = prl->operand;	
 		if (*n)
-			doc->prop.tcp.ITC = fTrue;
+			doc->prop.pap.ITC = fTrue;
 		else
-			doc->prop.tcp.ITC = fFalse;
+			doc->prop.pap.ITC = fFalse;
 		return 0;
 	}
 	

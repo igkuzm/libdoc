@@ -42,6 +42,7 @@ CP parse_table_row(cfb_doc_t *doc, CP cp, CP lcp,
 		while (cp <= clcp && cp < doc->fib.rgLw97->ccpText){
 
 			// parse paragraph
+			CP lcp = last_cp_in_paragraph(doc, cp); 
 			cp = parse_range_cp(doc, cp, lcp, user_data, 
 					callback);
 		}
@@ -93,7 +94,7 @@ for (cp = 0; cp < doc.fib.rgLw97->ccpText; ) {
 
 	} else {
 		// get paragraph boundaries and apply props
-		lcp = last_cp_in_paragraph(&doc, cp); 
+		CP lcp = last_cp_in_paragraph(&doc, cp); 
 		
 		// iterate cp
 		cp = parse_range_cp(&doc, cp, lcp, user_data, 

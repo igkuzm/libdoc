@@ -9,6 +9,7 @@
 #include "../include/libdoc/cell_boundaries.h"
 #include "../include/libdoc/direct_paragraph_formatting.h"
 #include "../include/libdoc/paragraph_boundaries.h"
+#include <string.h>
 
 /* 2.4.4 Determining Cell Boundaries
  * This section describes an algorithm to find the
@@ -34,17 +35,20 @@ CP last_cp_in_cell(cfb_doc_t *doc, CP cp)
 	if (doc->prop.pap.Itap > 0) {
 		
 		// check if TTP
-		if (doc->prop.trp.TTP)
+		if (doc->prop.pap.TTP)
 			return cp;
 
 		LONG itapOrig = doc->prop.pap.Itap;
 		
 		// get next paragraph last CP 
 		while (cp < doc->fib.rgLw97->ccpText){
+			
+			memset(&doc->prop.tcp, 0, sizeof(TCP));
+			
 			cp = last_cp_in_paragraph(doc, cp+1);
 		
 			// check if TTP
-			if (doc->prop.trp.TTP)
+			if (doc->prop.pap.TTP)
 				return cp;
 			
 			if (itapOrig == doc->prop.pap.Itap)
