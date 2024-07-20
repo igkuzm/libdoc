@@ -72,7 +72,7 @@ typedef struct char_prop
 	char sprmCFObj;
 	char sprmCFOle2;
 	char sprmCFData;
-	uint32_t sprmCPicLocation;
+	int32_t sprmCPicLocation;
 } CHP;            // CHaracter Properties
 
 /* Paragraph justification */
