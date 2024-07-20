@@ -293,6 +293,7 @@ typedef	struct style {
 
 // picture type
 typedef	enum {
+	pict_unknown,
 	pict_emf,     // Source of the picture is an EMF (enhanced metafile)
 	pict_png,     // PNG
 	pict_jpg,     // JPEG
@@ -301,6 +302,9 @@ typedef	enum {
 	pict_omf,     // Source of the picture is an OS/2 metafile
 	pict_ibitmap, // Source of the picture is a Windows device-independent bitmap 
 	pict_dbitmap, // Source of the picture is a Windows device-dependent bitmap 
+	pict_tiff,     // TIFF
+	pict_dib,     // DIB
+	pict_pict,     //PICT
 } PICT_T;
 
 typedef struct picture {

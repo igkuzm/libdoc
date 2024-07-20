@@ -2,7 +2,7 @@
  * File              : doc.c
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 26.05.2024
- * Last Modified Date: 29.05.2024
+ * Last Modified Date: 20.07.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
  */
 
@@ -684,6 +684,9 @@ int doc_read(cfb_doc_t *doc, struct cfb *cfb){
 		return DOC_ERR_FILE;
 	}
 
+	//get Data
+	doc->Data = cfb_get_stream(cfb, (char*)"Data");
+
 	//Read the Clx from the Table Stream
 	ret = _clx_init(doc);
 	if (ret)
@@ -752,6 +755,70 @@ void doc_close(cfb_doc_t *doc)
 			fclose(doc->Table);
 		if (doc->WordDocument)
 			fclose(doc->WordDocument);
+		if (doc->Data)
+			fclose(doc->Data);
 	}
 /* TODO: free memory and close streams */
+}
+
+
+struct picture * 
+doc_get_inline_picture(int ch, ldp_t *p)
+{
+	cfb_doc_t *doc = p->data;
+	struct picture *pic = 
+		NEW(struct picture,
+				ERR("new"); 
+				return NULL);
+
+	if (ch == INLINE_PICTURE){
+		if (doc->prop.chp.sprmCFData){
+			/* TODO: NilPICFAndBinData */
+		} else {
+			//PICFAndOfficeArtData
+			struct PICFAndOfficeArtData *d =
+				PICFAndOfficeArtDataNew(doc, 
+						doc->prop.chp.sprmCPicLocation);
+			if (!d)
+				return NULL;
+
+			enum OfficeArtRecType type;
+			pic->data = dataFromPICFAndOfficeArtData(
+					d, &pic->len, 
+					&type); 
+			switch (type) {
+				case OfficeArtRecTypeOfficeArtBlipEMF:
+					pic->type = pict_emf;
+					break;
+				case OfficeArtRecTypeOfficeArtBlipJPEG:
+				case OfficeArtRecTypeOfficeArtBlipJPEG_:
+					pic->type = pict_jpg;
+					break;
+				case OfficeArtRecTypeOfficeArtBlipDIB:
+					pic->type = pict_dib;
+					break;
+				case OfficeArtRecTypeOfficeArtBlipPICT:
+					pic->type = pict_pict;
+					break;
+				case OfficeArtRecTypeOfficeArtBlipPNG:
+					pic->type = pict_png;
+					break;
+				case OfficeArtRecTypeOfficeArtBlipWMF:
+					pic->type = pict_wmf;
+					break;
+				default:
+					break;
+			}
+
+			pic->goalw = d->picf.picmid.dxaGoal;
+			pic->goalh = d->picf.picmid.dyaGoal;
+			pic->scalex = d->picf.picmid.mx;
+			pic->scaley = d->picf.picmid.my;
+
+			return pic;
+		}
+	}
+
+	return NULL;
+
 }

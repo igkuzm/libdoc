@@ -131,7 +131,6 @@ int apply_char_property(
 	// picture location 
 	if (ismpd == sprmCPicLocation){
 		LONG *n = (LONG *)prl->operand;
-		fprintf(stderr, "PICLOCATION: %d\n", *n);
 		doc->prop.chp.sprmCPicLocation = *n; 
 		return 0;
 	}

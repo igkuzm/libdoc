@@ -5012,7 +5012,7 @@ typedef struct Brc80 Brc80MayBeNil;
 enum OfficeArtRecType {
 	OfficeArtRecTypeOfficeAtrFBSE      = 0xF007,
 	OfficeArtRecTypeOfficeArtBlipEMF   = 0xF01A,
-	OfficeArtRecTypeOfficeArtBlipWMP   = 0xF01B,
+	OfficeArtRecTypeOfficeArtBlipWMF   = 0xF01B,
 	OfficeArtRecTypeOfficeArtBlipPICT  = 0xF01C,
 	OfficeArtRecTypeOfficeArtBlipJPEG  = 0xF01D,
 	OfficeArtRecTypeOfficeArtBlipPNG   = 0xF01E,
@@ -5024,9 +5024,17 @@ enum OfficeArtRecType {
 struct OfficeArtRecordHeader {
 	SHORT recVer_recInstance; 
 	SHORT recType;
-	ULONG  recLen;              //number of bytes folowing 
-															//the header 
+	ULONG recLen;              //number of bytes folowing 
+														//the header 
 };
+
+static USHORT 
+OfficeArtRecordHeaderRecInstance(
+		struct OfficeArtRecordHeader *rh) 
+{
+	USHORT x = ((rh->recVer_recInstance & 0xFFF0) >> 4);
+	return x;
+}
 
 struct OfficeArtSpContainer {
 	struct OfficeArtRecordHeader rh;
@@ -5191,6 +5199,699 @@ struct PICF {
 												//and MUST be ignored.
 };
 
+/* The OfficeArtBlipEMF record specifies BLIP file data for
+ * the enhanced metafile format (EMF).*/
+struct OfficeArtBlipEMF {
+	struct OfficeArtRecordHeader rh; 
+												//(8 bytes): An
+												//OfficeArtRecordHeader structure,
+												//as defined in section 2.2.1, that
+												//specifies the header for this
+												//record. The following table
+												//specifies the subfields.
+												//rh.recVer 
+												//A value that MUST be 0x0.
+												//rh.recInstance A value of 0x3D4 
+												//to specify one Unique ID (UID), 
+												//or a value of 0x3D5 to specify 
+												//two UIDs.
+												//rh.recType  A value that MUST 
+												//be 0xF01A.
+												//rh.recLen      An unsigned integer
+												//that specifies the number of bytes
+												//following the header. This value
+												//MUST be the size of the
+												//BLIPFileData field plus 50 if
+												//recInstance equals 0x3D4, or
+												//the size of BLIPFileData plus 66
+												//if recInstance equals 0x3D5.
+	BYTE rgbUid1[16];     //(16 bytes): An MD4 message digest,
+												//as specified in [RFC1320], that
+												//specifies the unique identifier of
+												//the uncompressed BLIPFileData.
+	BYTE rgbUid2[16];     //(16 bytes): An MD4 message digest,
+												//as specified in [RFC1320], that
+												//specifies the unique identifier of
+												//the uncompressed BLIPFileData.
+												//This field only exists if
+												//recInstance equals 0x3D5. If 
+												//this value is not 0, rgbUid1 MUST
+												//be ignored.
+	BYTE metafileHeader[34]; 
+												//(34 bytes): An
+												//OfficeArtMetafileHeader record, as
+												//defined in section 2.2.31, that
+												//specifies how to process the
+												//metafile in BLIPFileData.
+
+	BYTE *BLIPFileData;   //(variable): A variable-length
+												//field that specifies the EMF data.
+
+};
+
+static void *dataFromOfficeArtBlipEMF(
+		void *officeArtBlipEMF, int *len)
+{
+	struct OfficeArtRecordHeader *rh = 
+		(struct OfficeArtRecordHeader *)officeArtBlipEMF;
+	if (rh->recType != OfficeArtRecTypeOfficeArtBlipEMF){
+		ERR("this is not OfficeArtBlipEMF!");
+		return NULL;
+	}
+	USHORT recInstance = OfficeArtRecordHeaderRecInstance(rh);
+	int l = rh->recLen;
+	if (recInstance ==  0x3D4)
+		l -= 50;
+	else if (recInstance == 0x3D5)
+		l -= 66;
+	else {
+		ERR("this is not OfficeArtBlipEMF - recInstance not match");
+		return NULL;
+	}
+	if (len)
+		*len = l;
+
+	BYTE *p = (BYTE *)officeArtBlipEMF;
+
+	if (recInstance == 0x3D4)
+		return &p[50];
+	else
+		return &p[66];
+};
+
+/* The OfficeArtBlipWMF record specifies BLIP file data for
+ * the Windows Metafile Format (WMF).*/
+struct OfficeArtBlipWMF {
+	struct OfficeArtRecordHeader rh; 
+												//(8 bytes): An
+												//OfficeArtRecordHeader structure,
+												//as defined in section 2.2.1, that
+												//specifies the header for this
+												//record. The following table
+												//specifies the subfields.
+												//rh.recVer      
+												//A value that MUST be 0x0.
+												//rh.recInstance A value of 0x216 to
+												//specify one UID, or a value of
+												//0x217 to specify two UIDs.
+												//rh.recType     
+												//A value that MUST be 0xF01B.
+												//rh.recLen      
+												//An unsigned integer that specifies 
+												//the number of bytes following 
+												//the header. This value MUST be 
+												//the size of BLIPFileData plus 50 
+												//if recInstance equals 0x216, 
+												//or the size of BLIPFileData 
+												//plus 66 if recInstance 
+												//equals 0x217.
+
+	BYTE rgbUid1[16];     //(16 bytes): An MD4 message digest,
+												//as specified in [RFC1320], that
+												//specifies the unique identifier of
+												//the uncompressed BLIPFileData.
+
+	BYTE rgbUid2[16];     //(16 bytes): An MD4 message digest,
+												//as specified in [RFC1320], that
+												//specifies the unique identifier of
+												//the uncompressed BLIPFileData.
+												//This field only exists if
+												//recInstance equals 0x217. 
+												//If this value exists, rgbUid1 
+												//MUST be ignored.
+
+	BYTE metafileHeader[34]; 
+												//(34 bytes): An
+												//OfficeArtMetafileHeader record, as
+												//defined in section 2.2.31, that
+												//specifies how to process the
+												//metafile in BLIPFileData.
+
+	BYTE *BLIPFileData;   //(variable): A variable-length
+												//field that specifies the WMF data.
+
+};
+
+static void *dataFromOfficeArtBlipWMF(
+		void *officeArtBlipWMF, int *len)
+{
+	struct OfficeArtRecordHeader *rh = 
+		(struct OfficeArtRecordHeader *)officeArtBlipWMF;
+	if (rh->recType != OfficeArtRecTypeOfficeArtBlipWMF){
+		ERR("this is not OfficeArtBlipWMF!");
+		return NULL;
+	}
+	USHORT recInstance = OfficeArtRecordHeaderRecInstance(rh);
+	int l = rh->recLen;
+	if (recInstance ==  0x216)
+		l -= 50;
+	else if (recInstance == 0x217)
+		l -= 66;
+	else {
+		ERR("this is not OfficeArtBlipWMF - recInstance not match");
+		return NULL;
+	}
+	if (len)
+		*len = l;
+
+	BYTE *p = (BYTE *)officeArtBlipWMF;
+
+	if (recInstance == 0x216)
+		return &p[50];
+	else
+		return &p[66];
+};
+
+
+/* The OfficeArtBlipPICT record specifies the BLIP file data
+ * for the Macintosh PICT format.*/
+struct OfficeArtBlipPICT {
+	struct OfficeArtRecordHeader rh; 
+												//(8 bytes): An
+												//OfficeArtRecordHeader structure,
+												//as defined in section 2.2.1, that
+												//specifies the header for this
+												//record. The following table
+												//specifies the subfields.
+												//rh.recVer      
+												//A value that MUST be 0x0.
+												//rh.recInstance A value of 0x542 
+												//to specify one UID, or a value of
+												//0x543 to specify two UIDs.
+												//rh.recType     
+												//A value that MUST be 0xF01C.
+												//rh.recLen An unsigned integer 
+												//that specifies the number of 
+												//bytes following the header. 
+												//This value MUST be the size 
+												//of BLIPFileData plus 50 
+												//if recInstance equals 0x542, 
+												//or the size of BLIPFileData 
+												//plus 66 if recInstance 
+												//equals 0x543.
+	BYTE rgbUid1[16];     //(16 bytes): An MD4 message digest,
+												//as specified in [RFC1320], that
+												//specifies the unique identifier of
+												//the uncompressed BLIPFileData.
+	BYTE rgbUid2[16];     //(16 bytes): An MD4 message digest,
+												//as specified in [RFC1320], that
+												//specifies the unique identifier of
+												//the uncompressed BLIPFileData.
+												//This field only exists if
+												//recInstance equals
+												//0x543. If this value exists, 
+												//rgbUid1 MUST be ignored.
+	BYTE metafileHeader[34]; 
+												//(34 bytes): An
+												//OfficeArtMetafileHeader record, as
+												//defined in section 2.2.31, that
+												//specifies how to process the
+												//metafile in BLIPFileData.
+
+	BYTE *BLIPFileData;   //(variable): A variable-length
+												//field that specifies the Macintosh
+												//PICT data.
+
+};
+
+static void *dataFromOfficeArtBlipPICT(
+		void *officeArtBlipPICT, int *len)
+{
+	struct OfficeArtRecordHeader *rh = 
+		(struct OfficeArtRecordHeader *)officeArtBlipPICT;
+	if (rh->recType != OfficeArtRecTypeOfficeArtBlipPICT){
+		ERR("this is not OfficeArtBlipPICT!");
+		return NULL;
+	}
+	USHORT recInstance = OfficeArtRecordHeaderRecInstance(rh);
+	int l = rh->recLen;
+	if (recInstance ==  0x542)
+		l -= 50;
+	else if (recInstance == 0x543)
+		l -= 66;
+	else {
+		ERR("this is not OfficeArtBlipPICT - recInstance not match");
+		return NULL;
+	}
+	if (len)
+		*len = l;
+
+	BYTE *p = (BYTE *)officeArtBlipPICT;
+
+	if (recInstance == 0x542)
+		return &p[50];
+	else
+		return &p[66];
+};
+
+
+/* The OfficeArtBlipJPEG record specifies BLIP file data for
+ * the Joint Photographic Experts Group (JPEG) format.*/
+struct OfficeArtBlipJPEG{
+	struct OfficeArtRecordHeader rh; 
+												//(8 bytes): An
+												//OfficeArtRecordHeader structure,
+												//as defined in section 2.2.1, that
+												//specifies the header for this
+												//record. The following table
+												//specifies the subfields.
+												//rh.recVer      
+												//A value that MUST be 0x0.
+												//rh.recInstance A value that is 
+												//specified in the following table.
+												//rh.recType     
+												//A value that MUST be 0xF01D.
+												//rh.recLen      
+												//An unsigned integer that specifies
+												//the number of bytes following the
+												//header. This value MUST be the
+												//size of BLIPFileData plus 17 if
+												//recInstance equals either 0x46A or
+												//0x6E2, or the size of BLIPFileData 
+												//plus 33 if recInstance equals 
+												//either 0x46B or 0x6E3.
+												//Value of recInstance         
+												//Meaning Number of unique identifiers
+
+												//0x46A JPEG in RGB color space  1
+												//0x46B JPEG in RGB color space  2
+												//0x6E2 JPEG in CMYK color space 1
+												//0x6E3 JPEG in CMYK color space 2
+
+	BYTE rgbUid1[16];     //(16 bytes): An MD4 message digest,
+												//as specified in [RFC1320], that
+												//specifies the unique identifier of
+												//the uncompressed BLIPFileData.
+
+	BYTE rgbUid2[16];     //(16 bytes): An MD4 message digest,
+												//as specified in [RFC1320], that
+												//specifies the unique identifier of
+												//the uncompressed BLIPFileData.
+												//This field only exists if
+												//recInstance equals
+												//either 0x46B or 0x6E3. 
+												//If this value is specified, 
+												//rgbUid1 MUST be ignored.
+	BYTE tag;             //(1 byte): An unsigned integer that
+												//specifies an application-defined
+												//internal resource tag. This value
+												//MUST be 0xFF for external files.
+
+	BYTE *BLIPFileData;   //(variable): A variable-length
+												//field that specifies the JPEG
+												//data.
+};
+
+static void *dataFromOfficeArtBlipJPEG(
+		void *officeArtBlipJPEG, int *len)
+{
+	struct OfficeArtRecordHeader *rh = 
+		(struct OfficeArtRecordHeader *)officeArtBlipJPEG;
+	if (
+			rh->recType != OfficeArtRecTypeOfficeArtBlipJPEG &&
+			rh->recType != OfficeArtRecTypeOfficeArtBlipJPEG_
+			)
+	{
+		ERR("this is not OfficeArtBlipJPEG!");
+		return NULL;
+	}
+	USHORT recInstance = OfficeArtRecordHeaderRecInstance(rh);
+	int l = rh->recLen;
+	if (recInstance ==  0x46A || recInstance == 0x6E2)
+		l -= 17;
+	else if (recInstance == 0x46B || recInstance == 0x6E3)
+		l -= 33;
+	else {
+		ERR("this is not OfficeArtBlipJPEG - recInstance not match");
+		return NULL;
+	}
+	if (len)
+		*len = l;
+
+	BYTE *p = (BYTE *)officeArtBlipJPEG;
+
+	if (recInstance ==  0x46A || recInstance == 0x6E2)
+		return &p[17];
+	else
+		return &p[33];
+};
+
+
+/* The OfficeArtBlipPNG record specifies BLIP file data for
+ * the Portable Network Graphics (PNG) format.*/
+struct OfficeArtBlipPNG {
+	struct OfficeArtRecordHeader rh; 
+												//(8 bytes): An
+												//OfficeArtRecordHeader structure,
+												//as defined in section 2.2.1, that
+												//specifies the header for this
+												//record. The following table
+												//specifies the subfields.
+												// rh.recVer      
+												// A value that MUST be 0x0.
+												//rh.recInstance A value of 0x6E0 to
+												//specify one UID, or a value of
+												//0x6E1 to specify two UIDs.
+												//rh.recType     A value that MUST
+												//be 0xF01E.
+												//rh.recLen      An unsigned integer
+												//that specifies the number of bytes
+												//following the header. This value
+												//MUST be the size of BLIPFileData
+												//plus 17 if recInstance equals
+												//0x6E0, or the size of
+												//BLIPFileData plus 33 if 
+												//recInstance equals 0x6E1.
+	BYTE rgbUid1[16];     //(16 bytes): An MD4 message digest,
+												//as specified in [RFC1320], that
+												//specifies the unique identifier of
+												//the uncompressed BLIPFileData.
+	BYTE rgbUid2[16];     //(16 bytes): An MD4 message digest,
+												//as specified in [RFC1320], that
+												//specifies the unique identifier of
+												//the uncompressed BLIPFileData.
+												//This field only exists if
+												//recInstance equals
+												//0x6E1. If this value exists, 
+												//rgbUid1 MUST be ignored.
+	BYTE tag;             //(1 byte): An unsigned integer that
+												//specifies an application-defined
+												//internal resource tag. This value
+												//MUST be 0xFF for external files.
+	BYTE *BLIPFileData;   //(variable): A variable-length
+												//field that specifies the PNG data.
+
+};
+
+static void *dataFromOfficeArtBlipPNG(
+		void *officeArtBlipPNG, int *len)
+{
+	struct OfficeArtRecordHeader *rh = 
+		(struct OfficeArtRecordHeader *)officeArtBlipPNG;
+	if (rh->recType != OfficeArtRecTypeOfficeArtBlipPNG){
+		ERR("this is not OfficeArtBlipPNG!");
+		return NULL;
+	}
+	USHORT recInstance = OfficeArtRecordHeaderRecInstance(rh);
+	int l = rh->recLen;
+	if (recInstance ==  0x6E0)
+		l -= 17;
+	else if (recInstance == 0x6E1)
+		l -= 33;
+	else {
+		ERR("this is not OfficeArtBlipPNG - recInstance not match");
+		return NULL;
+	}
+	if (len)
+		*len = l;
+
+	BYTE *p = (BYTE *)officeArtBlipPNG;
+
+	if (recInstance == 0x6E0)
+		return &p[17];
+	else
+		return &p[33];
+};
+
+
+/* The OfficeArtBlipDIB record specifies BLIP file data for
+ * the device-independent bitmap (DIB) format.*/
+struct OfficeArtBlipDIB {
+	struct OfficeArtRecordHeader rh; 
+												//(8 bytes): An
+												//OfficeArtRecordHeader structure,
+												//as defined in section 2.2.1, that
+												//specifies the header for this
+												//record. The following table
+												//specifies the subfields.
+												//rh.recVer A value that MUST be 0x0.
+												//rh.recInstance A value of 0x7A8 to
+												//specify one UID, or a value of
+												//0x7A9 to specify two UIDs.
+												//rh.recType     A value that MUST be 0xF01F.
+												//rh.recLen      An unsigned integer
+												//that specifies the number of bytes
+												//following the header. This value
+												//MUST be the size of BLIPFileData
+												//plus 17 if recInstance equals
+												//0x7A8, or the size of
+												//BLIPFileData plus 33 if 
+												//recInstance equals 0x7A9.
+	BYTE rgbUid1[16];     //(16 bytes): An MD4 message digest,
+												//as specified in [RFC1320], that
+												//specifies the unique identifier of
+												//the uncompressed BLIPFileData.
+	BYTE rgbUid2[16];     //(16 bytes): An MD4 message digest,
+												//as specified in [RFC1320], that
+												//specifies the unique identifier of
+												//the uncompressed BLIPFileData.
+												//This field only exists if
+												//recInstance equals
+												//0x7A9. If this value exists, 
+												//rgbUid1 MUST be ignored.
+	BYTE tag;							//(1 byte): An unsigned integer that
+												//specifies an application-defined
+												//internal resource tag. This value
+												//MUST be 0xFF for external files.
+	BYTE *BLIPFileData;   //(variable): A variable-length
+												//field that specifies the DIB data.
+};
+
+static void *dataFromOfficeArtBlipDIB(
+		void *officeArtBlipDIB, int *len)
+{
+	struct OfficeArtRecordHeader *rh = 
+		(struct OfficeArtRecordHeader *)officeArtBlipDIB;
+	if (rh->recType != OfficeArtRecTypeOfficeArtBlipDIB){
+		ERR("this is not OfficeArtBlipDIB!");
+		return NULL;
+	}
+	USHORT recInstance = OfficeArtRecordHeaderRecInstance(rh);
+	int l = rh->recLen;
+	if (recInstance ==  0x7A8)
+		l -= 17;
+	else if (recInstance == 0x7A9)
+		l -= 33;
+	else {
+		ERR("this is not OfficeArtBlipDIB - recInstance not match");
+		return NULL;
+	}
+	if (len)
+		*len = l;
+
+	BYTE *p = (BYTE *)officeArtBlipDIB;
+
+	if (recInstance == 0x7A8)
+		return &p[17];
+	else
+		return &p[33];
+};
+
+
+/* The OfficeArtBlipTIFF record specifies BLIP file data for
+ * the TIFF format. */
+struct OfficeArtBlipTIFF {
+	struct OfficeArtRecordHeader rh; 
+												//(8 bytes): An
+												//OfficeArtRecordHeader structure,
+												//as defined in section 2.2.1, that
+												//specifies the header for this
+												//record. The following table
+												//specifies the subfields.
+												//rh.recVer      
+												//A value that MUST be 0x0.
+												//rh.recInstance A value of 0x6E4 to
+												//specify one UID, or a value of
+												//0x6E5 to specify two UIDs.
+												//rh.recType     A value that MUST
+												//be 0xF029.
+												//rh.recLen      
+												//An unsigned integer that 
+												//specifies the number of bytes 
+												//following the header. 
+												//This value MUST be the size of 
+												//BLIPFileData plus 17 if 
+												//recInstance equals 0x6E4, or 
+												//the size of BLIPFileData plus 
+												//33 if recInstance equals 0x6E5.
+	BYTE rgbUid1[16];     //(16 bytes): An MD4 message digest,
+												//as specified in [RFC1320], that
+												//specifies the unique identifier of
+												//the uncompressed BLIPFileData.
+	BYTE rgbUid2[16];     //(16 bytes): An MD4 message digest,
+												//as specified in [RFC1320], that
+												//specifies the unique identifier of
+												//the uncompressed BLIPFileData.
+												//This field only exists if
+												//recInstance equals
+												//0x6E5. If this value exists, 
+												//rgbUid1 MUST be ignored.
+	BYTE tag;             //(1 byte): An unsigned integer that
+												//specifies an application-defined
+												//internal resource tag. This value
+												//MUST be 0xFF for external files.
+	BYTE *BLIPFileData;   //(variable): A variable-length
+												//field that specifies the TIFF
+												//data.
+
+};
+
+static void *dataFromOfficeArtBlipTIFF(
+		void *officeArtBlipTIFF, int *len)
+{
+	struct OfficeArtRecordHeader *rh = 
+		(struct OfficeArtRecordHeader *)officeArtBlipTIFF;
+	if (rh->recType != OfficeArtRecTypeOfficeArtBlipTIFF){
+		ERR("this is not OfficeArtBlipTIFF!");
+		return NULL;
+	}
+	USHORT recInstance = OfficeArtRecordHeaderRecInstance(rh);
+	int l = rh->recLen;
+	if (recInstance ==  0x6E4)
+		l -= 17;
+	else if (recInstance == 0x6E5)
+		l -= 33;
+	else {
+		ERR("this is not OfficeArtBlipTIFF - recInstance not match");
+		return NULL;
+	}
+	if (len)
+		*len = l;
+
+	BYTE *p = (BYTE *)officeArtBlipTIFF;
+
+	if (recInstance == 0x6E4)
+		return &p[17];
+	else
+		return &p[33];
+};
+
+/*The OfficeArtFBSE record specifies a File BLIP Store Entry
+ * (FBSE) that contains information about the BLIP.*/
+struct OfficeArtFBSE {
+	struct OfficeArtRecordHeader rh; 
+												//(8 bytes): An
+												//OfficeArtRecordHeader structure,
+												//as defined in section 2.2.1, that
+												//specifies the header for this
+												//record. The following table
+												//specifies the subfields.
+												//rh.recVer
+												//A value that MUST be 0x2.
+												//rh.recInstance An MSOBLIPTYPE
+												//enumeration value, as defined in
+												//section 2.4.1, that specifies the
+												//BLIP type and MUST match either
+												//btWin32 or btMacOS.
+												//rh.recType     A value that MUST
+												//be 0xF007.
+												//rh.recLen      An unsigned integer
+												//that specifies the number of bytes
+												//following the header. This value
+												//MUST be the size of nameData plus
+												//36 if the BLIP is not embedded in
+												//this record, or
+												//the size of nameData plus size
+												//plus 36 if the BLIP is embedded in
+												//this record.
+
+	BYTE btWin32;         //(1 byte): An MSOBLIPTYPE
+												//enumeration value, as defined in
+												//section 2.4.1, that specifies the
+												//Windows BLIP type. If the btMacOS
+												//value is supported by the Windows
+												//operating system, this
+												//value MUST match btMacOS. If the
+												//values of btWin32 and btMacOS are
+												//different, the BLIP that matches
+												//rh.recInstance MUST be present and
+												//the other MAY be present.
+
+	BYTE btMacOS;         //(1 byte): An MSOBLIPTYPE
+												//enumeration value, as defined in
+												//section 2.4.1, that specifies the
+												//Macintosh BLIP type. If the
+												//btWin32 value is supported by the
+												//Macintosh operating system,
+												//this value MUST match btWin32. If
+												//the values of btWin32 and btMacOS
+												//are different, the BLIP that
+												//matches rh.recInstance MUST be
+												//present and the other MAY be
+												//present.
+
+	BYTE rgbUid[16];      //(16 bytes): An MD4 message digest,
+												//as specified in [RFC1320], that
+												//specifies the unique identifier of
+												//the pixel data in the BLIP.
+
+	USHORT tag;           //(2 bytes): An unsigned integer
+												//that specifies an
+												//application-defined internal
+												//resource tag. This value MUST be
+												//0xFF for external files.
+
+	ULONG size;           //(4 bytes): An unsigned integer
+												//that specifies the size, in bytes,
+												//of the BLIP in the stream.
+
+	ULONG cRef;           //(4 bytes): An unsigned integer
+												//that specifies the number of
+												//references to the BLIP. A value of
+												//0x00000000 specifies an empty slot
+												//in the OfficeArtBStoreContainer
+												//record, as defined in
+												//section 2.2.20.
+
+	ULONG foDelay;        //(4 bytes): An MSOFO structure, as
+												//defined in section 2.1.4, that
+												//specifies the file offset into the
+												//associated OfficeArtBStoreDelay
+												//record, as defined in section
+												//2.2.21, (delay stream). A value of
+												//0xFFFFFFFF specifies that the file
+												//is not in the delay stream, and in
+												//this case, cRef MUST be
+												//0x00000000.
+
+	BYTE unused1;         //(1 byte): A value that is
+												//undefined and MUST be ignored.
+
+	BYTE cbName;          //(1 byte): An unsigned integer that
+												//specifies the length, in bytes, of
+												//the nameData field, including the
+												//terminating NULL character. This
+												//value MUST be an even number and
+												//less than or equal to 0xFE. If the
+												//value is 0x00, nameData will not
+												//be written.
+
+	BYTE unused2;         //(1 byte): A value that is
+												//undefined and MUST be ignored.
+
+	BYTE unused3;         //(1 byte):  A value that is
+												//undefined and MUST be ignored.
+
+	BYTE *nameData;       //(variable): A Unicode
+												//null-terminated string that
+												//specifies the name of the BLIP.
+
+	BYTE *embeddedBlip;   //(variable): An OfficeArtBlip
+												//record, as defined in section
+												//2.2.23, specifying the BLIP file
+												//data that is embedded in this
+												//record. If this value is not 0,
+												//foDelay MUST be ignored.
+};
+
+static void *dataFromOfficeArtFBSE(
+		void *OfficeArtFBSE, int *len, enum OfficeArtRecType type)
+{
+	/* TODO:  <20-07-24, yourname> */
+	ERR("dataFromOfficeArtFBSE not implied");	
+	return NULL;
+};
+
 /* 2.9.192 PICFAndOfficeArtData
  * The PICFAndOfficeArtData structure specifies header
  * information and binary data for a picture.
@@ -5205,7 +5906,7 @@ struct PICFAndOfficeArtData {
 											 //specifies the type of the picture,
 											 //as well as the picture size
 											 //and border information.
-	BYTE *cchPicName;    //(1 byte): An optional unsigned
+	BYTE cchPicName;     //(1 byte): An optional unsigned
 											 //integer that specifies the size of
 											 //stPicName. This value
 											 //MUST exist if and only if
@@ -5217,7 +5918,7 @@ struct PICFAndOfficeArtData {
 											 //picture. This value MUST exist 
 											 //if and only if picf.mfpf.mm is 
 											 //MM_SHAPEFILE
-	struct OfficeArtInlineSpContainer *picture;
+	BYTE *picture;
 												//(variable): An 
 												//OfficeArtInlineSpContainer, 
 												//as specified in [MS-ODRAW] 
@@ -5225,13 +5926,50 @@ struct PICFAndOfficeArtData {
 												//the image.
 };
 
-static struct PICFAndOfficeArtData * 
-PICFAndOfficeArtDataNew(LONG position)
-{
-	struct PICFAndOfficeArtData *t = 
-		NEW(struct PICFAndOfficeArtData, return NULL);
-
-	return t;
+/* 2.9.158 NilPICFAndBinData
+ * The NilPICFAndBinData structure that holds header
+ * information and binary data for a hyperlink,
+ * form field, or add-in field. The NilPICFAndBinData
+ * structure MUST be stored in the Data Stream. */
+struct NilPICFAndBinData {
+	LONG lcb;             //(4 bytes): A signed integer that
+												//specifies the size, in bytes, of
+												//this structure.
+	USHORT cbHeader;      //(2 bytes): An unsigned integer
+												//that specifies the number of bytes
+												//from the beginning of
+												//this structure to the beginning 
+												//of binData. This value MUST 
+												//be 0x44.
+	BYTE ignored[62];     //(62 bytes): This field MUST be 0
+												//and MUST be ignored.
+	BYTE *binData;        //(variable): The interpretation of
+												//the binData element depends on the
+												//field type of the field containing 
+												//the picture character and is 
+												//given by the following.
+												//Field Type   Data Type
+												//REF          HFD
+												//PAGEREF      HFD
+												//FORMTEXT     FFData
+												//FORMCHECKBOX FFData
+												//NOTEREF      HFD
+												//PRIVATE			 Custom binary data 
+												//             that is specified 
+												//             by the add-in that 
+												//             inserted this field.
+												//ADDIN        Custom binary data 
+												//             that is specified by the
+												//             add-in that inserted this field.
+												//FORMDROPDOWN FFData
+												//HYPERLINK    HFD
+												//
+ //The NilPICFAndBinData structure is invalid if it
+ //describes a picture character that is not inside a field
+ //or is inside a field with a field type other than those
+ //specified in the preceding table. The size of binData is
+ //lcb –cbHeader. The data MAY<227> be invalid. If the data
+ //is invalid, it MUST be ignored.
 };
 
 /*
@@ -5242,6 +5980,7 @@ typedef struct cfb_doc
 {
 	FILE *WordDocument;   //document stream
 	FILE *Table;          //table stream
+	FILE *Data;           //data stream
 	
 	Fib  fib;             //File information block
 	struct Clx clx;       //clx data
@@ -5262,6 +6001,90 @@ int  doc_read( cfb_doc_t *doc, struct cfb *cfb);
 // free memory and close streams
 void doc_close(cfb_doc_t *doc);
 	
+static struct PICFAndOfficeArtData * 
+PICFAndOfficeArtDataNew(cfb_doc_t *doc, LONG position)
+{
+	struct PICFAndOfficeArtData *t = 
+		NEW(struct PICFAndOfficeArtData, return NULL);
+	fseek(doc->Data, position, SEEK_SET);
+	fread(&t->picf, 68, 1, doc->Data);
+	if (t->picf.mfpf.mm == MM_SHAPEFILE){
+		fread(&t->cchPicName, 1, 1, doc->Data);
+		if (t->cchPicName > 0){
+			t->stPicName = 
+				(BYTE *)MALLOC(t->cchPicName, 
+						ERR("malloc"); return NULL);
+			fread(t->stPicName, t->cchPicName, 1, doc->Data);
+		}
+	}
+
+	// read header
+	t->picture = 
+		(BYTE *)MALLOC(sizeof(struct OfficeArtRecordHeader),
+				ERR("malloc"); return NULL);
+	fread(t->picture,
+			sizeof(struct OfficeArtRecordHeader),
+			1, doc->Data);
+	struct OfficeArtRecordHeader *rh = 
+		((struct OfficeArtRecordHeader *)(t->picture));
+
+	// read tail
+	if (rh->recLen > sizeof(struct OfficeArtRecordHeader)){
+		t->picture = (BYTE *)REALLOC(t->picture, 
+				sizeof(struct OfficeArtRecordHeader) + rh->recLen, 
+				ERR("realloc"); return NULL);
+		fread(
+				&t->picture[sizeof(struct OfficeArtRecordHeader)], 
+				rh->recLen, 1, doc->Data);
+		
+		return t;
+	}
+
+	return NULL;
+};
+
+static void *dataFromPICFAndOfficeArtData(
+		void *PICFAndOfficeArtData, int *len, enum OfficeArtRecType *type)
+{
+
+	struct OfficeArtRecordHeader *rh = 
+		(struct OfficeArtRecordHeader *)PICFAndOfficeArtData;
+	
+	if (type)
+		*type = (enum OfficeArtRecType)rh->recType;
+
+	switch (rh->recType) {
+		case OfficeArtRecTypeOfficeArtBlipEMF:
+			return dataFromOfficeArtBlipEMF(
+					PICFAndOfficeArtData, len); 
+		case OfficeArtRecTypeOfficeArtBlipWMF:
+			return dataFromOfficeArtBlipWMF(
+					PICFAndOfficeArtData, len); 
+		case OfficeArtRecTypeOfficeArtBlipPICT:
+			return dataFromOfficeArtBlipPICT(
+					PICFAndOfficeArtData, len); 
+		case OfficeArtRecTypeOfficeArtBlipJPEG:
+		case OfficeArtRecTypeOfficeArtBlipJPEG_:
+			return dataFromOfficeArtBlipJPEG(
+					PICFAndOfficeArtData, len); 
+		case OfficeArtRecTypeOfficeArtBlipPNG:
+			return dataFromOfficeArtBlipPNG(
+					PICFAndOfficeArtData, len); 
+		case OfficeArtRecTypeOfficeArtBlipDIB:
+			return dataFromOfficeArtBlipDIB(
+					PICFAndOfficeArtData, len); 
+		case OfficeArtRecTypeOfficeArtBlipTIFF:
+			return dataFromOfficeArtBlipTIFF(
+					PICFAndOfficeArtData, len); 
+	
+		default:
+			ERR("unknown data type: %d", rh->recType);
+			return NULL;
+	}
+	return NULL;
+}
+
+
 #ifdef __cplusplus
 }
 #endif
