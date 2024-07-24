@@ -2,7 +2,7 @@
  * File              : doc.c
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 26.05.2024
- * Last Modified Date: 20.07.2024
+ * Last Modified Date: 24.07.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
  */
 
@@ -62,7 +62,7 @@ static int _doc_fib_init(Fib *fib, FILE *fp, struct cfb *cfb){
 	fib->rgCswNew = NULL;
 
 	//allocate fibbase
-	fib->base = (FibBase *)MALLOC(32,
+	fib->base = (FibBase *)ALLOC(32,
 		ERR("malloc");
 		return DOC_ERR_ALLOC);
 
@@ -122,7 +122,7 @@ static int _doc_fib_init(Fib *fib, FILE *fp, struct cfb *cfb){
 	}
 
 	//allocate FibRgW97
-	fib->rgW97 = (FibRgW97 *)MALLOC(28,
+	fib->rgW97 = (FibRgW97 *)ALLOC(28,
 		ERR("malloc");
 		free(fib->base);
 		return DOC_ERR_ALLOC);
@@ -167,7 +167,7 @@ static int _doc_fib_init(Fib *fib, FILE *fp, struct cfb *cfb){
 	}	
 
 	//allocate FibRgLw97
-	fib->rgLw97 = (FibRgLw97 *)MALLOC(88,
+	fib->rgLw97 = (FibRgLw97 *)ALLOC(88,
 		ERR("malloc");
 		free(fib->base);
 		free(fib->rgW97);
@@ -219,7 +219,7 @@ static int _doc_fib_init(Fib *fib, FILE *fp, struct cfb *cfb){
 #endif	
 
 	//allocate rgFcLcb
-	fib->rgFcLcb = (uint32_t *)MALLOC(fib->cbRgFcLcb*8,
+	fib->rgFcLcb = (uint32_t *)ALLOC(fib->cbRgFcLcb*8,
 		ERR("malloc");
 		free(fib->base);
 		free(fib->rgW97);
@@ -268,7 +268,7 @@ static int _doc_fib_init(Fib *fib, FILE *fp, struct cfb *cfb){
 	if (fib->cswNew > 0){
 		//allocate FibRgCswNew
 		fib->rgCswNew = 
-			(FibRgCswNew *)MALLOC(fib->cswNew * 2,
+			(FibRgCswNew *)ALLOC(fib->cswNew * 2,
 		  ERR("malloc");
 			free(fib->base);
 			free(fib->rgW97);
@@ -345,7 +345,7 @@ int _plcpcd_init(struct PlcPcd * PlcPcd, uint32_t len, cfb_doc_t *doc){
 #endif	
 
 	//allocate aCP
-	PlcPcd->aCp = (uint32_t *)MALLOC(4,
+	PlcPcd->aCp = (uint32_t *)ALLOC(4,
 			ERR("malloc");
 			free(PlcPcd);	
 			return -1);
@@ -390,7 +390,7 @@ int _plcpcd_init(struct PlcPcd * PlcPcd, uint32_t len, cfb_doc_t *doc){
 	LOG("number of Pcd in array: %d", PlcPcd->aPcdl);
 #endif	
 	
-	PlcPcd->aPcd = (struct Pcd *)MALLOC(size,
+	PlcPcd->aPcd = (struct Pcd *)ALLOC(size,
 			ERR("malloc");
 			free(PlcPcd->aCp);	
 			free(PlcPcd);	
@@ -514,7 +514,7 @@ static int _clx_init(cfb_doc_t *doc)
 		clx->RgPrc->data->cbGrpprl = cbGrpprl;
 
 		//allocate GrpPrl
-		clx->RgPrc->data->GrpPrl = (struct Prl *)MALLOC(cbGrpprl,
+		clx->RgPrc->data->GrpPrl = (struct Prl *)ALLOC(cbGrpprl,
 				ERR("malloc");
 				return DOC_ERR_ALLOC);
 		
@@ -782,32 +782,36 @@ doc_get_inline_picture(int ch, ldp_t *p)
 			if (!d)
 				return NULL;
 
-			enum OfficeArtRecType type;
+			USHORT type;
 			pic->data = dataFromPICFAndOfficeArtData(
-					d, &pic->len, 
+					d->picture, &pic->len, 
 					&type); 
-			switch (type) {
-				case OfficeArtRecTypeOfficeArtBlipEMF:
+			if (!pic->data)
+				return NULL;
+
+			if (type == OfficeArtRecTypeOfficeArtBlipEMF){
 					pic->type = pict_emf;
-					break;
-				case OfficeArtRecTypeOfficeArtBlipJPEG:
-				case OfficeArtRecTypeOfficeArtBlipJPEG_:
+			}
+			else if (
+				type == OfficeArtRecTypeOfficeArtBlipJPEG ||
+				type == OfficeArtRecTypeOfficeArtBlipJPEG_
+				){
 					pic->type = pict_jpg;
-					break;
-				case OfficeArtRecTypeOfficeArtBlipDIB:
+			}
+			else if (type == OfficeArtRecTypeOfficeArtBlipDIB){
 					pic->type = pict_dib;
-					break;
-				case OfficeArtRecTypeOfficeArtBlipPICT:
+			}
+			else if (type == OfficeArtRecTypeOfficeArtBlipPICT){
 					pic->type = pict_pict;
-					break;
-				case OfficeArtRecTypeOfficeArtBlipPNG:
+			}
+			else if (type == OfficeArtRecTypeOfficeArtBlipPNG){
 					pic->type = pict_png;
-					break;
-				case OfficeArtRecTypeOfficeArtBlipWMF:
+			}
+			else if (type == OfficeArtRecTypeOfficeArtBlipWMF){
 					pic->type = pict_wmf;
-					break;
-				default:
-					break;
+			}
+			else if (type == OfficeArtRecTypeOfficeArtBlipTIFF){
+					pic->type = pict_tiff;
 			}
 
 			pic->goalw = d->picf.picmid.dxaGoal;
