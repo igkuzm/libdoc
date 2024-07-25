@@ -2,7 +2,7 @@
  * File              : doc2txt.c
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 27.05.2024
- * Last Modified Date: 20.07.2024
+ * Last Modified Date: 25.07.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
  */
 
@@ -35,6 +35,10 @@ int main(int argc, char *argv[])
 	return ret;
 }
 
+static void picture(struct picture *pic, void *d){
+	fprintf(stderr, "PIC len: %d\n", pic->len);
+}
+
 int main_document(void *d, ldp_t *p, int ch){
 
 /* Following symbols below 32 are allowed inside paragraph:
@@ -56,8 +60,11 @@ int main_document(void *d, ldp_t *p, int ch){
 			{
 				fprintf(stderr,
 						"INLINE_PICTURE\n");
-				struct picture *pic = 
-					doc_get_inline_picture(ch, p);
+				doc_get_inline_picture(
+						ch, 
+						p, 
+						NULL, 
+						picture);
 				printf("%c", ' '); break;
 			}
 			

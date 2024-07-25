@@ -2,7 +2,7 @@
  * File              : libdoc.h
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 27.05.2024
- * Last Modified Date: 20.07.2024
+ * Last Modified Date: 25.07.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
  */
 
@@ -86,8 +86,9 @@ int doc_parse(const char *filename, void *user_data,
 		int (*footnotes)(void *user_data, ldp_t *p, int ch),
 		int (*headers)(void *user_data, ldp_t *p, int ch));
 
-
-struct picture * doc_get_inline_picture(int ch, ldp_t *p);
+void doc_get_inline_picture(
+		int ch, ldp_t *p, void *userdata,
+		void (*callback)(struct picture *pic, void *userdata));
 
 #ifdef __cplusplus
 }

@@ -5009,8 +5009,6 @@ struct Brc80 {
 typedef struct Brc80 Brc80MayBeNil;
 
 /* PICTURES */
-#define OfficeArtRecTypeOfficeArtBStoreContainer 0xF001
-#define OfficeArtRecTypeOfficeArtChildAnchor     0xF00F
 #define OfficeArtRecTypeOfficeArtSpContainer     0xF004
 #define OfficeArtRecTypeOfficeArtFBSE            0xF007
 #define OfficeArtRecTypeOfficeArtBlipEMF         0xF01A
@@ -5280,36 +5278,6 @@ struct OfficeArtBlipEMF {
 
 };
 
-static void *dataFromOfficeArtBlipEMF(
-		void *officeArtBlipEMF, int *len)
-{
-	struct OfficeArtRecordHeader *rh = 
-		(struct OfficeArtRecordHeader *)officeArtBlipEMF;
-	if (rh->recType != OfficeArtRecTypeOfficeArtBlipEMF){
-		ERR("this is not OfficeArtBlipEMF!");
-		return NULL;
-	}
-	USHORT recInstance = OfficeArtRecordHeaderRecInstance(rh);
-	int l = rh->recLen;
-	if (recInstance ==  0x3D4)
-		l -= 50;
-	else if (recInstance == 0x3D5)
-		l -= 66;
-	else {
-		ERR("this is not OfficeArtBlipEMF - recInstance not match");
-		return NULL;
-	}
-	if (len)
-		*len = l;
-
-	BYTE *p = (BYTE *)officeArtBlipEMF;
-
-	if (recInstance == 0x3D4)
-		return &p[50];
-	else
-		return &p[66];
-};
-
 /* The OfficeArtBlipWMF record specifies BLIP file data for
  * the Windows Metafile Format (WMF).*/
 struct OfficeArtBlipWMF {
@@ -5363,37 +5331,6 @@ struct OfficeArtBlipWMF {
 
 };
 
-static void *dataFromOfficeArtBlipWMF(
-		void *officeArtBlipWMF, int *len)
-{
-	struct OfficeArtRecordHeader *rh = 
-		(struct OfficeArtRecordHeader *)officeArtBlipWMF;
-	if (rh->recType != OfficeArtRecTypeOfficeArtBlipWMF){
-		ERR("this is not OfficeArtBlipWMF!");
-		return NULL;
-	}
-	USHORT recInstance = OfficeArtRecordHeaderRecInstance(rh);
-	int l = rh->recLen;
-	if (recInstance ==  0x216)
-		l -= 50;
-	else if (recInstance == 0x217)
-		l -= 66;
-	else {
-		ERR("this is not OfficeArtBlipWMF - recInstance not match");
-		return NULL;
-	}
-	if (len)
-		*len = l;
-
-	BYTE *p = (BYTE *)officeArtBlipWMF;
-
-	if (recInstance == 0x216)
-		return &p[50];
-	else
-		return &p[66];
-};
-
-
 /* The OfficeArtBlipPICT record specifies the BLIP file data
  * for the Macintosh PICT format.*/
 struct OfficeArtBlipPICT {
@@ -5444,37 +5381,6 @@ struct OfficeArtBlipPICT {
 												//PICT data.
 
 };
-
-static void *dataFromOfficeArtBlipPICT(
-		void *officeArtBlipPICT, int *len)
-{
-	struct OfficeArtRecordHeader *rh = 
-		(struct OfficeArtRecordHeader *)officeArtBlipPICT;
-	if (rh->recType != OfficeArtRecTypeOfficeArtBlipPICT){
-		ERR("this is not OfficeArtBlipPICT!");
-		return NULL;
-	}
-	USHORT recInstance = OfficeArtRecordHeaderRecInstance(rh);
-	int l = rh->recLen;
-	if (recInstance ==  0x542)
-		l -= 50;
-	else if (recInstance == 0x543)
-		l -= 66;
-	else {
-		ERR("this is not OfficeArtBlipPICT - recInstance not match");
-		return NULL;
-	}
-	if (len)
-		*len = l;
-
-	BYTE *p = (BYTE *)officeArtBlipPICT;
-
-	if (recInstance == 0x542)
-		return &p[50];
-	else
-		return &p[66];
-};
-
 
 /* The OfficeArtBlipJPEG record specifies BLIP file data for
  * the Joint Photographic Experts Group (JPEG) format.*/
@@ -5533,41 +5439,6 @@ struct OfficeArtBlipJPEG{
 												//data.
 };
 
-static void *dataFromOfficeArtBlipJPEG(
-		void *officeArtBlipJPEG, int *len)
-{
-	struct OfficeArtRecordHeader *rh = 
-		(struct OfficeArtRecordHeader *)officeArtBlipJPEG;
-	if (
-			rh->recType != OfficeArtRecTypeOfficeArtBlipJPEG &&
-			rh->recType != OfficeArtRecTypeOfficeArtBlipJPEG_
-			)
-	{
-		ERR("this is not OfficeArtBlipJPEG!");
-		return NULL;
-	}
-	USHORT recInstance = OfficeArtRecordHeaderRecInstance(rh);
-	int l = rh->recLen;
-	if (recInstance ==  0x46A || recInstance == 0x6E2)
-		l -= 17;
-	else if (recInstance == 0x46B || recInstance == 0x6E3)
-		l -= 33;
-	else {
-		ERR("this is not OfficeArtBlipJPEG - recInstance not match");
-		return NULL;
-	}
-	if (len)
-		*len = l;
-
-	BYTE *p = (BYTE *)officeArtBlipJPEG;
-
-	if (recInstance ==  0x46A || recInstance == 0x6E2)
-		return &p[17];
-	else
-		return &p[33];
-};
-
-
 /* The OfficeArtBlipPNG record specifies BLIP file data for
  * the Portable Network Graphics (PNG) format.*/
 struct OfficeArtBlipPNG {
@@ -5614,37 +5485,6 @@ struct OfficeArtBlipPNG {
 
 };
 
-static void *dataFromOfficeArtBlipPNG(
-		void *officeArtBlipPNG, int *len)
-{
-	struct OfficeArtRecordHeader *rh = 
-		(struct OfficeArtRecordHeader *)officeArtBlipPNG;
-	if (rh->recType != OfficeArtRecTypeOfficeArtBlipPNG){
-		ERR("this is not OfficeArtBlipPNG!");
-		return NULL;
-	}
-	USHORT recInstance = OfficeArtRecordHeaderRecInstance(rh);
-	int l = rh->recLen;
-	if (recInstance ==  0x6E0)
-		l -= 17;
-	else if (recInstance == 0x6E1)
-		l -= 33;
-	else {
-		ERR("this is not OfficeArtBlipPNG - recInstance not match");
-		return NULL;
-	}
-	if (len)
-		*len = l;
-
-	BYTE *p = (BYTE *)officeArtBlipPNG;
-
-	if (recInstance == 0x6E0)
-		return &p[17];
-	else
-		return &p[33];
-};
-
-
 /* The OfficeArtBlipDIB record specifies BLIP file data for
  * the device-independent bitmap (DIB) format.*/
 struct OfficeArtBlipDIB {
@@ -5687,37 +5527,6 @@ struct OfficeArtBlipDIB {
 	BYTE *BLIPFileData;   //(variable): A variable-length
 												//field that specifies the DIB data.
 };
-
-static void *dataFromOfficeArtBlipDIB(
-		void *officeArtBlipDIB, int *len)
-{
-	struct OfficeArtRecordHeader *rh = 
-		(struct OfficeArtRecordHeader *)officeArtBlipDIB;
-	if (rh->recType != OfficeArtRecTypeOfficeArtBlipDIB){
-		ERR("this is not OfficeArtBlipDIB!");
-		return NULL;
-	}
-	USHORT recInstance = OfficeArtRecordHeaderRecInstance(rh);
-	int l = rh->recLen;
-	if (recInstance ==  0x7A8)
-		l -= 17;
-	else if (recInstance == 0x7A9)
-		l -= 33;
-	else {
-		ERR("this is not OfficeArtBlipDIB - recInstance not match");
-		return NULL;
-	}
-	if (len)
-		*len = l;
-
-	BYTE *p = (BYTE *)officeArtBlipDIB;
-
-	if (recInstance == 0x7A8)
-		return &p[17];
-	else
-		return &p[33];
-};
-
 
 /* The OfficeArtBlipTIFF record specifies BLIP file data for
  * the TIFF format. */
@@ -5765,36 +5574,6 @@ struct OfficeArtBlipTIFF {
 												//field that specifies the TIFF
 												//data.
 
-};
-
-static void *dataFromOfficeArtBlipTIFF(
-		void *officeArtBlipTIFF, int *len)
-{
-	struct OfficeArtRecordHeader *rh = 
-		(struct OfficeArtRecordHeader *)officeArtBlipTIFF;
-	if (rh->recType != OfficeArtRecTypeOfficeArtBlipTIFF){
-		ERR("this is not OfficeArtBlipTIFF!");
-		return NULL;
-	}
-	USHORT recInstance = OfficeArtRecordHeaderRecInstance(rh);
-	int l = rh->recLen;
-	if (recInstance ==  0x6E4)
-		l -= 17;
-	else if (recInstance == 0x6E5)
-		l -= 33;
-	else {
-		ERR("this is not OfficeArtBlipTIFF - recInstance not match");
-		return NULL;
-	}
-	if (len)
-		*len = l;
-
-	BYTE *p = (BYTE *)officeArtBlipTIFF;
-
-	if (recInstance == 0x6E4)
-		return &p[17];
-	else
-		return &p[33];
 };
 
 /*The OfficeArtFBSE record specifies a File BLIP Store Entry
@@ -5915,52 +5694,6 @@ struct OfficeArtFBSE {
 												//foDelay MUST be ignored.
 };
 
-static void *dataFromOfficeArtFBSE(
-		void *OfficeArtFBSE, int *len)
-{
-	struct OfficeArtRecordHeader *rh = 
-		(struct OfficeArtRecordHeader *)OfficeArtFBSE;
-	if (rh->recType != OfficeArtRecTypeOfficeArtFBSE){
-		ERR("this is not OfficeArtFBSE!");
-		return NULL;
-	}
-
-	BYTE *p = OfficeArtFBSE;
-
-	struct OfficeArtFBSE *t = 
-		(struct OfficeArtFBSE *)OfficeArtFBSE;
-	
-	t->nameData = NULL;
-	t->embeddedBlip = NULL;
-
-	int offset = sizeof(struct OfficeArtFBSE)
-		- sizeof(BYTE*)  // nameData 
-		- sizeof(BYTE*); // embeddedBlip
-
-	// skip name size
-	offset += t->cbName;
-
-	fprintf(stderr, "name len: %d\n", t->cbName);
-	
-	fprintf(stderr, "data size: %d\n", t->size);
-
-	if (len)
-		*len = t->size;
-
-	t->embeddedBlip = &p[offset]; 
-
-	struct OfficeArtRecordHeader *rh1 = t->embeddedBlip;
-	fprintf(stderr, "HEADERL: %d\n", rh1->recLen);
-	fprintf(stderr, "HEADERT: %d\n", rh1->recType);
-
-	FILE *fp = fopen("/home/kuzmich/tttt", "w");
-	fwrite(t->embeddedBlip, t->size, 1, fp);
-	fclose(fp);
-
-
-	return t->embeddedBlip;
-};
-
 /* 2.9.192 PICFAndOfficeArtData
  * The PICFAndOfficeArtData structure specifies header
  * information and binary data for a picture.
@@ -6070,124 +5803,6 @@ int  doc_read( cfb_doc_t *doc, struct cfb *cfb);
 // free memory and close streams
 void doc_close(cfb_doc_t *doc);
 	
-static struct PICFAndOfficeArtData * 
-PICFAndOfficeArtDataNew(cfb_doc_t *doc, LONG position)
-{
-	if (!doc || !doc->Data)
-		return NULL;
-
-	// allocate memory
-	struct PICFAndOfficeArtData *t = 
-		NEW(struct PICFAndOfficeArtData, return NULL);
-
-	// read PICF from stream
-	fseek(doc->Data, position, SEEK_SET);
-	fread(&t->picf, 68, 1, doc->Data);
-
-	// read PicName if needed
-	if (t->picf.mfpf.mm == MM_SHAPEFILE){
-		fread(&t->cchPicName, 1, 1, doc->Data);
-		if (t->cchPicName > 0){
-			t->stPicName = 
-				(BYTE *)ALLOC(t->cchPicName, 
-						ERR("malloc"); return NULL);
-			fread(t->stPicName, t->cchPicName, 1, doc->Data);
-		}
-	}
-	
-	// read SpContainer header
-	struct OfficeArtRecordHeader spHeader;
-	fread(&spHeader,
-			OfficeArtRecordHeaderSize,
-			1, doc->Data);
-
-	// skip SpContainer shape data
-	fseek(doc->Data,
-			spHeader.recLen, SEEK_CUR);
-
-	// read OfficeArtBStoreContainerFileBlock header
-	struct OfficeArtRecordHeader header;
-	fread(&header,
-			OfficeArtRecordHeaderSize,
-			1, doc->Data);
-
-	fprintf(stderr, "found image container: 0x%X, len: %d\n", 
-			header.recType, header.recLen);
-
-	// read data
-	char buf[header.recLen];
-	fread(buf, header.recLen, 1,
-			doc->Data);
-
-	char *p = ALLOC(OfficeArtRecordHeaderSize + header.recLen, );
-
-	memcpy(p, &header, OfficeArtRecordHeaderSize);
-	memcpy(&p[OfficeArtRecordHeaderSize], buf, header.recLen);
-
-	dataFromOfficeArtFBSE(p, NULL);
-
-	return NULL;
-}
-
-static void *dataFromPICFAndOfficeArtData(
-		void *PICFAndOfficeArtData, int *len, SHORT * OfficeArtRecType)
-{
-
-	struct OfficeArtRecordHeader *rh = 
-		(struct OfficeArtRecordHeader *)PICFAndOfficeArtData;
-	
-	if (OfficeArtRecType)
-		*OfficeArtRecType = rh->recType;
-
-	if (rh->recType < 0xF000 || rh->recType > 0xFFFF){
-		ERR("error recType: %X", rh->recType);
-		return NULL;
-	}
-
-	if (rh->recType == OfficeArtRecTypeOfficeArtBlipEMF)
-	{
-			return dataFromOfficeArtBlipEMF(
-					PICFAndOfficeArtData, len); 
-	}
-	else if (
-		rh->recType == OfficeArtRecTypeOfficeArtBlipJPEG ||
-		rh->recType == OfficeArtRecTypeOfficeArtBlipJPEG_
-		)
-	{
-			return dataFromOfficeArtBlipJPEG(
-					PICFAndOfficeArtData, len); 
-	}
-	else if (rh->recType == OfficeArtRecTypeOfficeArtBlipDIB)
-	{
-			return dataFromOfficeArtBlipDIB(
-					PICFAndOfficeArtData, len); 
-	}
-	else if (rh->recType == OfficeArtRecTypeOfficeArtBlipPICT)
-	{
-			return dataFromOfficeArtBlipPICT(
-					PICFAndOfficeArtData, len); 
-	}
-	else if (rh->recType == OfficeArtRecTypeOfficeArtBlipPNG)
-	{
-			return dataFromOfficeArtBlipPNG(
-					PICFAndOfficeArtData, len); 
-	}
-	else if (rh->recType == OfficeArtRecTypeOfficeArtBlipWMF)
-	{
-			return dataFromOfficeArtBlipWMF(
-					PICFAndOfficeArtData, len); 
-	}
-	else if (rh->recType == OfficeArtRecTypeOfficeArtBlipTIFF)
-	{
-			return dataFromOfficeArtBlipTIFF(
-					PICFAndOfficeArtData, len); 
-	}
-
-	ERR("unknown data type: %X", rh->recType);
-	return NULL;
-}
-
-
 #ifdef __cplusplus
 }
 #endif

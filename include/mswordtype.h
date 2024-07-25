@@ -2,7 +2,7 @@
  * File              : mswordtype.h
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 17.01.2024
- * Last Modified Date: 20.07.2024
+ * Last Modified Date: 25.07.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
  */
 
@@ -298,13 +298,12 @@ typedef	enum {
 	pict_png,     // PNG
 	pict_jpg,     // JPEG
 	pict_mac,     // Source of the picture is QuickDraw
+								// (PICT)
 	pict_wmf,     // Source of the picture is a Windows metafile 
 	pict_omf,     // Source of the picture is an OS/2 metafile
-	pict_ibitmap, // Source of the picture is a Windows device-independent bitmap 
+	pict_ibitmap, // Source of the picture is a Windows device-independent bitmap (DIB) 
 	pict_dbitmap, // Source of the picture is a Windows device-dependent bitmap 
 	pict_tiff,     // TIFF
-	pict_dib,     // DIB
-	pict_pict,     //PICT
 } PICT_T;
 
 typedef struct picture {
