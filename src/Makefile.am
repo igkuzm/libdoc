@@ -5,9 +5,11 @@ nobase_include_HEADERS = \
 										../include/libdoc/prl.h \
 										../include/libdoc/sprm.h \
 										../include/libdoc/paragraph_boundaries.h \
+										../include/libdoc/section_boundaries.h \
 										../include/libdoc/cell_boundaries.h \
 										../include/libdoc/direct_paragraph_formatting.h \
 										../include/libdoc/direct_character_formatting.h \
+										../include/libdoc/direct_section_formatting.h \
 										../include/libdoc/apply_properties.h \
 										../include/libdoc/style_properties.h \
 										../include/libdoc/retrieving_text.h
@@ -24,10 +26,12 @@ libdoc_la_SOURCES = cell_boundaries.c \
 										row_boundaries.c \
 										direct_paragraph_formatting.c \
 										direct_character_formatting.c \
+										direct_section_formatting.c \
 									  doc.c \
 									  prl.c \
 										doc_parse.c \
 										paragraph_boundaries.c \
+										section_boundaries.c \
 										apply_properties.c \
 										style_properties.c \
 										retrieving_text.c
