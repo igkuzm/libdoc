@@ -2,13 +2,14 @@
  * File              : doc_parse.c
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 26.05.2024
- * Last Modified Date: 05.08.2024
+ * Last Modified Date: 06.08.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
  */
 #include "../include/libdoc.h"
 #include "../include/libdoc/paragraph_boundaries.h"
 #include "../include/libdoc/retrieving_text.h"
 #include "../include/libdoc/direct_section_formatting.h"
+#include "../include/libdoc/style_properties.h"
 #include "../include/libdoc/section_boundaries.h"
 #include "../include/libdoc/direct_character_formatting.h"
 #include "../include/libdoc/direct_paragraph_formatting.h"
@@ -20,10 +21,11 @@ int callback(void *d, struct Prl *prl){
 
 CP parse_range_cp(cfb_doc_t *doc, CP cp, CP lcp,
 		void *user_data,
-		int (*callback)(void *user_data, ldp_t *p, int ch))
+		DOC_PART part,
+		int (*callback)(void *user_data, DOC_PART part, ldp_t *p, int ch))
 {
 	while (cp <= lcp && cp < doc->fib.rgLw97->ccpText){
-		get_char_for_cp(doc, cp, user_data,
+		get_char_for_cp(doc, cp, user_data, part,
 				callback);
 		cp++;
 	}
@@ -32,7 +34,8 @@ CP parse_range_cp(cfb_doc_t *doc, CP cp, CP lcp,
 
 CP parse_table_row(cfb_doc_t *doc, CP cp, CP lcp,
 		void *user_data,
-		int (*callback)(void *user_data, ldp_t *p, int ch))
+		DOC_PART part,
+		int (*callback)(void *user_data, DOC_PART part, ldp_t *p, int ch))
 {
 	while (cp <= lcp && cp < doc->fib.rgLw97->ccpText){
 		//get cell
@@ -45,7 +48,7 @@ CP parse_table_row(cfb_doc_t *doc, CP cp, CP lcp,
 
 			// parse paragraph
 			CP lcp = last_cp_in_paragraph(doc, cp); 
-			cp = parse_range_cp(doc, cp, lcp, user_data, 
+			cp = parse_range_cp(doc, cp, lcp, user_data, part, 
 					callback);
 		}
 	}
@@ -53,9 +56,8 @@ CP parse_table_row(cfb_doc_t *doc, CP cp, CP lcp,
 }
 
 int doc_parse(const char *filename, void *user_data,
-		int (*main_document)(void *user_data, ldp_t *p, int ch),
-		int (*footnotes)(void *user_data, ldp_t *p, int ch),
-		int (*headers)(void *user_data, ldp_t *p, int ch))
+		int (*styles)(void *user_data, ldp_t *p, int istd),
+		int (*text)(void *user_data, DOC_PART part, ldp_t *p, int ch))
 {
 #ifdef DEBUG
 	LOG("start");
@@ -78,6 +80,21 @@ int doc_parse(const char *filename, void *user_data,
 
 	FibRgFcLcb97 *rgFcLcb97 = (FibRgFcLcb97 *)(doc.fib.rgFcLcb);
 
+// parse styles
+	struct LPStd *LPStd =  
+		LPStd_at_index(doc.STSH->rglpstd,
+			doc.lrglpstd, 0);
+	
+	for (i = 0; LPStd; ++i, 
+			LPStd = 
+				LPStd_at_index(doc.STSH->rglpstd,
+					doc.lrglpstd, i)
+			) 
+	{
+		apply_style_properties(&doc, i);
+		styles(user_data, &doc.prop, i);
+	}
+
 /* 2.3.1 Main Document
  * The main document contains all content outside any of 
  * the specialized document parts, including
@@ -87,7 +104,7 @@ int doc_parse(const char *filename, void *user_data,
  * FibRgLw97.ccpText characters long.
  * The last character in the main document MUST be a 
  * paragraph mark (Unicode 0x000D).*/
-	
+
 	// for each section in word document
 	for (i=0; i < doc.plcfSedNaCP; ++i){
 		CP first = doc.plcfSed->aCP[i];
@@ -106,16 +123,16 @@ int doc_parse(const char *filename, void *user_data,
 			CP lcp = last_cp_in_row(&doc, cp);
 			if (lcp != CPERROR){
 				// this CP is in table
-				cp = parse_table_row(&doc, cp, lcp, user_data, 
-						main_document);
+				cp = parse_table_row(&doc, cp, lcp, user_data, MAIN_DOCUMENT, 
+						text);
 
 			} else {
 				// get paragraph boundaries and apply props
 				CP lcp = last_cp_in_paragraph(&doc, cp); 
 				
 				// iterate cp
-				cp = parse_range_cp(&doc, cp, lcp, user_data, 
-						main_document);
+				cp = parse_range_cp(&doc, cp, lcp, user_data, MAIN_DOCUMENT, 
+						text);
 			}
 		}	
 	}
@@ -132,9 +149,10 @@ int doc_parse(const char *filename, void *user_data,
  * reference characters in the Main Document are specified
  * by a PlcffndRef whose location is specified
  * by the fcPlcffndRef member of FibRgFcLcb97. */
+
 for (;cp < doc.fib.rgLw97->ccpFtn; ++cp) {
-	get_char_for_cp(&doc, cp, user_data,
-			footnotes);
+	get_char_for_cp(&doc, cp, user_data, FOOTNOTES,
+			text);
 }
 
 /* by the fcPlcffndRef member of FibRgFcLcb97.
@@ -159,7 +177,7 @@ for (;cp < doc.fib.rgLw97->ccpFtn; ++cp) {
  * PlcfHdd, being the same as the next CP in PlcfHdd */
 for (;cp < doc.fib.rgLw97->ccpHdd; ++cp) {
 	get_char_for_cp(&doc, cp, user_data,
-			headers);
+			HEADERS, text);
 }
 
 doc_close(&doc);
