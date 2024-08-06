@@ -2,7 +2,7 @@
  * File              : style_properties.c
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 28.05.2024
- * Last Modified Date: 06.08.2024
+ * Last Modified Date: 07.08.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
  */
 
@@ -27,6 +27,7 @@ static int callback(void *userdata, struct Prl *prl);
 /* Given an istd: */
 void apply_style_properties(cfb_doc_t *doc, USHORT istd)
 {
+	return;
 /* 1. Read the FIB from offset zero in the WordDocument
  * Stream. */
 	struct Fib *fib = &doc->fib;
@@ -117,7 +118,7 @@ void apply_style_properties(cfb_doc_t *doc, USHORT istd)
 #ifdef DEBUG
 	char str[BUFSIZ] = "";
 	USHORT *xstz = p+1;
-	_utf16_to_utf8(xstz, *p, str);
+	_utf16_to_utf8(xstz, *p > BUFSIZ?BUFSIZ:*p, str);
 	LOG("style name: %s", str);
 #endif
 
@@ -229,6 +230,9 @@ void apply_style_properties(cfb_doc_t *doc, USHORT istd)
  * append to the beginning of the corresponding array from
  * step 5, if any. The resulting arrays of Prl
  * are the desired output. Leave the algorithm. */
+#ifdef DEBUG
+	LOG("done");
+#endif
 }
 int callback(void *userdata, struct Prl *prl){
 	// parse properties

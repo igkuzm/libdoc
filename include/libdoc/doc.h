@@ -2,7 +2,7 @@
  * File              : doc.h
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 04.11.2022
- * Last Modified Date: 05.08.2024
+ * Last Modified Date: 07.08.2024
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
  */
 
@@ -13,7 +13,7 @@
 extern "C"{
 #endif
 
-/*#define DEBUG*/
+//#define DEBUG
 
 #include <stdint.h>
 #include <stdio.h>
@@ -3864,13 +3864,13 @@ static void papxFkp_init(
 	papxFkp->rgbx = (struct BxPap *)(&(buf[(papxFkp->cpara + 1)*4]));
 #ifdef DEBUG
 LOG("PapxFkp->cpara: %d", papxFkp->cpara);
-int i;
-for (i = 0; i < papxFkp->cpara+1; ++i) {
-	LOG("PapxFkp.rgfc[%d]: %d ", i, papxFkp->rgfc[i]);	
-}
-for (i = 0; i < papxFkp->cpara; ++i) {
-	LOG("rgbx[%d].bOffset: %d ", i, papxFkp->rgbx[i].bOffset);	
-}
+//int i;
+//for (i = 0; i < papxFkp->cpara+1; ++i) {
+	//LOG("PapxFkp.rgfc[%d]: %d ", i, papxFkp->rgfc[i]);	
+//}
+//for (i = 0; i < papxFkp->cpara; ++i) {
+	//LOG("rgbx[%d].bOffset: %d ", i, papxFkp->rgbx[i].bOffset);	
+//}
 #endif
 }
 
@@ -3940,13 +3940,13 @@ static void chpxFkp_init(
 	chpxFkp->rgb = &(buf[(chpxFkp->crun + 1)*4]);
 #ifdef DEBUG
 LOG("ChpxFkp->cpara: %d", chpxFkp->crun);
-int i;
-for (i = 0; i < chpxFkp->crun+1; ++i) {
-	LOG("ChpxFkp.rgfc[%d]: %d ", i, chpxFkp->rgfc[i]);	
-}
-for (i = 0; i < chpxFkp->crun; ++i) {
-	LOG("rgb[%d]: %d ", i, chpxFkp->rgb[i]);	
-}
+//int i;
+//for (i = 0; i < chpxFkp->crun+1; ++i) {
+	//LOG("ChpxFkp.rgfc[%d]: %d ", i, chpxFkp->rgfc[i]);	
+//}
+//for (i = 0; i < chpxFkp->crun; ++i) {
+	//LOG("rgb[%d]: %d ", i, chpxFkp->rgb[i]);	
+//}
 #endif
 }
 
