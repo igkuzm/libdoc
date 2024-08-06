@@ -8,6 +8,7 @@
 
 #include "../include/libdoc/apply_properties.h"
 #include "../include/libdoc/style_properties.h"
+#include "../include/libdoc/direct_character_formatting.h"
 #include "../include/libdoc/operands.h"
 #include <stdint.h>
 
@@ -143,8 +144,8 @@ int apply_char_property(
 #ifdef DEBUG
 	LOG("character istd: %d", *istd); 
 #endif
-	/* TODO:  <07-08-24, yourname> */
-		/*apply_style_properties(doc, *istd);*/
+		set_chp_to_default(doc);
+		apply_style_properties(doc, *istd);
 		return 0;
 	}
 	
