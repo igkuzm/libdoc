@@ -19,7 +19,7 @@
 /* The ToggleOperand structure is an operand to an SPRM
  * whose spra is 0 and whose sgc is 2. It
  * modifies a Boolean character property. */
-static bool ToggleOperand(cfb_doc_t *doc, BYTE operand)
+static bool ToggleOperand(cfb_doc_t *doc, bool current, BYTE operand)
 {
 #ifdef DEBUG
 	LOG("operand: 0x%02x", operand); 
@@ -37,18 +37,17 @@ static bool ToggleOperand(cfb_doc_t *doc, BYTE operand)
  * 0x81 The Boolean property is set to the opposite of the
  * value of the property in the current style that is
  * applied to the text. */
+
 	switch (operand) {
 		case 0x00: return false;
 		case 0x01: return true;
 		case 0x80: 
 			{
-				/* TODO: current style check */
-				return false;	
+				return current;	
 			}
 		case 0x81: 
 			{
-				/* TODO: current style check */
-				return true;	
+				return !current;	
 			}
 		default:
 			ERR("wrong ToggleOperand: 0x%02x", operand);

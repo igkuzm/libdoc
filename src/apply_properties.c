@@ -61,21 +61,27 @@ int apply_char_property(
 	// set bold
 	if (ismpd == sprmCFBold){
 		chp->fBold = 
-			ToggleOperand(doc, prl->operand[0]); 
+			ToggleOperand(doc, 
+					doc->prop.pap_chp.fBold, 
+					prl->operand[0]); 
 		return 0;
 	}
 	
 	// set italic
 	if (ismpd == sprmCFItalic){
 		chp->fItalic = 
-			ToggleOperand(doc, prl->operand[0]); 
+			ToggleOperand(doc, 
+					doc->prop.pap_chp.fItalic, 
+					prl->operand[0]); 
 		return 0;
 	}
 	
 	// set outline
 	if (ismpd == sprmCFOutline){
 		chp->fUnderline = 
-			ToggleOperand(doc, prl->operand[0]); 
+			ToggleOperand(doc, 
+					doc->prop.pap_chp.fUnderline, 
+					prl->operand[0]); 
 		return 0;
 	}
 
@@ -103,14 +109,18 @@ int apply_char_property(
 	// cpital letters
 	if (ismpd == sprmCFSmallCaps){
 		chp->allCaps = 
-			ToggleOperand(doc, prl->operand[0]); 
+			ToggleOperand(doc, 
+					doc->prop.pap_chp.allCaps, 
+					prl->operand[0]); 
 		return 0;
 	}
 
 	// special chars 
 	if (ismpd == sprmCFSpec){
 		doc->prop.chp.sprmCFSpec = 
-			ToggleOperand(doc, prl->operand[0]); 
+			ToggleOperand(doc, 
+					doc->prop.pap_chp.sprmCFSpec, 
+					prl->operand[0]); 
 		return 0;
 	}
 

@@ -88,7 +88,8 @@ static void _parse_styles(cfb_doc_t *doc, void *user_data,
 		STYLE s;
 		memset(&s, 0, sizeof(STYLE));
 		s.s = index;
-		s.chp = doc->prop.pap_chp;
+		s.chp = doc->prop.chp;
+		s.pap_chp = doc->prop.pap_chp;
 
 		USHORT *p = NULL;
 
