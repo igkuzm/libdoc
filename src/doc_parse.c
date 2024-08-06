@@ -13,6 +13,7 @@
 #include "../include/libdoc/section_boundaries.h"
 #include "../include/libdoc/direct_character_formatting.h"
 #include "../include/libdoc/direct_paragraph_formatting.h"
+#include <stdio.h>
 
 int callback(void *d, struct Prl *prl){
 	printf("PRL with sprm: %d \n", prl->sprm);	
@@ -56,7 +57,7 @@ CP parse_table_row(cfb_doc_t *doc, CP cp, CP lcp,
 }
 
 int doc_parse(const char *filename, void *user_data,
-		int (*styles)(void *user_data, ldp_t *p, int istd),
+		int (*styles)(void *user_data, STYLE *s),
 		int (*text)(void *user_data, DOC_PART part, ldp_t *p, int ch))
 {
 #ifdef DEBUG
@@ -92,7 +93,55 @@ int doc_parse(const char *filename, void *user_data,
 			) 
 	{
 		apply_style_properties(&doc, i);
-		styles(user_data, &doc.prop, i);
+				
+		if (LPStd->cbStd == 0)
+			continue;
+
+		struct STD *STD = (struct STD *)LPStd->STD;
+		
+		STYLE s;
+		memset(&s, 0, sizeof(STYLE));
+		s.s = i;
+		s.chp = doc.prop.pap_chp;
+
+		USHORT *p = NULL;
+
+		// check if STD->Stdf has StdfPost2000;
+		struct STSH *STSH = doc.STSH;
+		struct STSHI *STSHI = STSH->lpstshi->stshi;
+		USHORT cbSTDBaseInFile = STSHI->stshif.cbSTDBaseInFile;
+		
+		if (cbSTDBaseInFile == 0x000A){
+			// no StdfPost2000
+			p = (USHORT *)((struct STD_noStdfPost2000 *)STD)->xstzName_grLPUpxSw;
+
+		} else if (cbSTDBaseInFile == 0x0012){
+			// has StdfPost2000
+			p = (USHORT *)STD->xstzName_grLPUpxSw;
+		
+		} else {
+			ERR("cbSTDBaseInFile");
+			continue;
+		}
+
+		// get name
+		char str[BUFSIZ];
+		memset(str, 0, BUFSIZ);
+		
+		if (*p){
+			USHORT *xstz = p+1;
+			_utf16_to_utf8(xstz, *p, str);
+			//LOG(str);
+			strncpy(s.name, str, sizeof(s.name) - 1);
+			s.lname = strlen(s.name);
+		}
+
+		struct StdfBase *stdfBase = (struct StdfBase *)STD;
+		USHORT istdBase = StdfBaseIstdBase(stdfBase);
+
+		s.sbedeon = istdBase;
+
+		styles(user_data, &s);
 	}
 
 /* 2.3.1 Main Document

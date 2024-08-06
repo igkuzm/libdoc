@@ -93,7 +93,7 @@ typedef enum {
 /* open MS-DOC file and run callbacks for characters in 
  * main document, footnotes and headers */
 int doc_parse(const char *filename, void *user_data,
-		int (*styles)(void *user_data, ldp_t *p, int istd),
+		int (*styles)(void *user_data, STYLE *s),
 		int (*text)(void *user_data, DOC_PART part, ldp_t *p, int ch));
 
 void doc_get_picture(

@@ -12,7 +12,7 @@
 
 /* read MS-DOC and print it's content */
 
-int styles(void *, ldp_t*, int);
+int styles(void *, STYLE *s);
 int text(void *, DOC_PART,  ldp_t*, int);
 
 int main(int argc, char *argv[])
@@ -104,8 +104,8 @@ int text(void *d, DOC_PART part, ldp_t *p, int ch){
 	return 0;
 }
 
-int styles(void *d, ldp_t *p, int istd){
-	fprintf(stderr, "STYLE: %d, fs: %d\n", istd, p->pap_chp.size);
+int styles(void *d, STYLE *s){
+	fprintf(stderr, "STYLE: %d, %s, fs: %d\n", s->s, s->name, s->chp.size);
 
 	return 0;
 }
