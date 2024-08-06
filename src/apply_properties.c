@@ -143,7 +143,8 @@ int apply_char_property(
 #ifdef DEBUG
 	LOG("character istd: %d", *istd); 
 #endif
-		apply_style_properties(doc, *istd);
+	/* TODO:  <07-08-24, yourname> */
+		/*apply_style_properties(doc, *istd);*/
 		return 0;
 	}
 	
