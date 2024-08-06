@@ -27,7 +27,6 @@ static int callback(void *userdata, struct Prl *prl);
 /* Given an istd: */
 void apply_style_properties(cfb_doc_t *doc, USHORT istd)
 {
-	return;
 /* 1. Read the FIB from offset zero in the WordDocument
  * Stream. */
 	struct Fib *fib = &doc->fib;

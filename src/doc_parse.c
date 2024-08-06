@@ -60,12 +60,10 @@ static void _parse_styles(cfb_doc_t *doc, void *user_data,
 		int (*styles)(void *user_data, STYLE *s))
 {
 	// parse styles
-	struct LPStd *LPStd =  
-		LPStd_at_index(doc->STSH->rglpstd,
-			doc->lrglpstd, 0);
+	USHORT cstd = doc->STSH->lpstshi->stshi->stshif.cstd;
 	
 	int i, index = 0;
-	for (i = 0; i < doc->lrglpstd;) {
+	for (i = 0; i < doc->lrglpstd && index < cstd;) {
 
 		void *ptr = &(doc->STSH->rglpstd[i]); 
 		// read cbStd
@@ -74,22 +72,21 @@ static void _parse_styles(cfb_doc_t *doc, void *user_data,
 		LOG("SDT at index %d size: %d", index, *cbStd);
 #endif
 		
-		// skeep next cbStd bytes and 2 bytes of cbStd itself
-		i += *cbStd + 2;
-
 		struct LPStd *LPStd = 
 			(struct LPStd *)&(doc->STSH->rglpstd[i]);
 
 		apply_style_properties(doc, index);
 				
-		if (LPStd->cbStd == 0)
+		if (LPStd->cbStd == 0){
+			i += 2;
 			continue;
+		}
 
 		struct STD *STD = (struct STD *)LPStd->STD;
 		
 		STYLE s;
 		memset(&s, 0, sizeof(STYLE));
-		s.s = i;
+		s.s = index;
 		s.chp = doc->prop.pap_chp;
 
 		USHORT *p = NULL;
@@ -109,6 +106,7 @@ static void _parse_styles(cfb_doc_t *doc, void *user_data,
 		
 		} else {
 			ERR("cbSTDBaseInFile");
+			i += *cbStd + 2;
 			continue;
 		}
 
@@ -134,6 +132,8 @@ static void _parse_styles(cfb_doc_t *doc, void *user_data,
 		styles(user_data, &s);
 
 		// iterate
+		// skeep next cbStd bytes and  2 bytes of cbStd itself
+		i += *cbStd + 2;
 		index++;
 	}
 }
