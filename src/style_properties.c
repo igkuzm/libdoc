@@ -169,7 +169,7 @@ void apply_style_properties(cfb_doc_t *doc, USHORT istd)
 				#ifdef DEBUG
 					LOG("UpxChpx len: %d", len);
 				#endif
-				
+			
 				parse_grpprl(
 					(BYTE *)(pupxChpx->CHPX), 
 					cbUpx, 

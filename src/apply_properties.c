@@ -138,8 +138,15 @@ int apply_char_property(
 		return 0;
 	}
 
-
-
+	if (ismpd == sprmCIstd){
+		USHORT *istd = (USHORT *)prl->operand;
+#ifdef DEBUG
+	LOG("character istd: %d", *istd); 
+#endif
+		apply_style_properties(doc, *istd);
+		return 0;
+	}
+	
 #ifdef DEBUG
 	LOG("no rule to parse ismpd: 0x%02x", ismpd); 
 #endif
@@ -541,11 +548,15 @@ int apply_table_property(
 	LOG("NumberOfColumns: %d", prl->operand[2]); 
 #endif
 		struct TDefTableOperand t; 
-		if (TDefTableOperandInit(prl, &t))
+		int n = TDefTableOperandInit(prl, &t);
+		if (n < 0)	
 			return -1;	
+		
 		struct TC80 *rgTc80 = 
 			(struct TC80 *)t.rgTc80;
+		
 		doc->prop.trp.ncellx = t.NumberOfColumns;
+		
 		XAS *axas = (SHORT *)(t.rgdxaCenter);
 		// first cell left indent = axas[0];
 		/*! TODO: first cell left indent */
@@ -554,38 +565,42 @@ int apply_table_property(
 			XAS xas = axas[i+1];
 			doc->prop.trp.cellx[i] = xas;
 
+			if (!rgTc80)
+				continue;
+
+			struct TC80 TC80;
+			if (i < n)
+				TC80 = rgTc80[i];
+			else
+				memset(&TC80, 0xFF, sizeof(struct TC80));
+
 			// set borders
 			bool bT = fFalse;
 			bool bL = fFalse;
 			bool bB= fFalse;
 			bool bR = fFalse;
-			if (t.rgTc80){	
-				if (rgTc80[i].brcTop.brcType != 0xFF &&
-						rgTc80[i].brcTop.brcType > 0)
-					bT = fTrue;
-				if (rgTc80[i].brcLeft.brcType != 0xFF &&
-						rgTc80[i].brcLeft.brcType > 0)
-					bL = fTrue;
-				if (rgTc80[i].brcBottom.brcType != 0xFF &&
-						rgTc80[i].brcBottom.brcType > 0)
-					bB = fTrue;
-				if (rgTc80[i].brcRight.brcType != 0xFF &&
-						rgTc80[i].brcRight.brcType > 0)
-					bR = fTrue;
-				
-				doc->prop.trp.cbordT[i] = bT;
-				doc->prop.trp.cbordL[i] = bL;
-				doc->prop.trp.cbordB[i] = bB;
-				doc->prop.trp.cbordR[i] = bR;
+			if (TC80.brcTop.brcType != 0xFF &&
+					TC80.brcTop.brcType > 0)
+				bT = fTrue;
+			if (TC80.brcLeft.brcType != 0xFF &&
+					TC80.brcLeft.brcType > 0)
+				bL = fTrue;
+			if (TC80.brcBottom.brcType != 0xFF &&
+					TC80.brcBottom.brcType > 0)
+				bB = fTrue;
+			if (TC80.brcRight.brcType != 0xFF &&
+					TC80.brcRight.brcType > 0)
+				bR = fTrue;
+			
+			doc->prop.trp.cbordT[i] = bT;
+			doc->prop.trp.cbordL[i] = bL;
+			doc->prop.trp.cbordB[i] = bB;
+			doc->prop.trp.cbordR[i] = bR;
 
 #ifdef DEBUG
 	LOG("Column %d has XAS: %d, borders: %d:%d:%d:%d", i-1, xas, bT, bL, bB, bR); 
 #endif
-			}
 		}
-		
-		free(t.rgTc80);
-
 		
 		return 0;
 	}

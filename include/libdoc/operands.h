@@ -333,37 +333,27 @@ struct TDefTableOperand {
 												// excess TC80s MUST be ignored.
 };
 
-static int
-TDefTableOperandInit(struct Prl *prl, struct TDefTableOperand *t)
+// return number of TC80
+static int TDefTableOperandInit(
+		struct Prl *prl, struct TDefTableOperand *t)
 {
 #ifdef DEBUG
 	LOG("start");
 #endif
 
+	memset(t, 0, sizeof(struct TDefTableOperand));
+
 	t->cb = *(USHORT *)(prl->operand);
 	t->NumberOfColumns = *(&(prl->operand[2]));
 	t->rgdxaCenter = &(prl->operand[3]);
-	t->rgTc80 = NULL;
+	
+	// rgTc80 is after XAS array 
+	int of = (t->NumberOfColumns + 1) * 2 + 3;
 
-	if (t->NumberOfColumns > 0){
-		int size = t->cb - ((t->NumberOfColumns + 1)*2) - 1; 
-#ifdef DEBUG
-	LOG("size: %d", size);
-#endif
-		int len  = t->NumberOfColumns * sizeof(struct TC80);
-		if (size > sizeof(struct TC80)){
-			t->rgTc80 = (BYTE *)malloc(len);
-			if (!t->rgTc80)
-				return -1;
-			memset(t->rgTc80, 0xFF, len);
-			int i;
-			for (i=0; i < size; i++){
-				t->rgTc80[i] = 
-					prl->operand[3 + t->NumberOfColumns * 2 + 2 + i];
-			}
-		}
-	}
-	return 0;
+	t->rgTc80 = &(prl->operand[of]);
+
+	int n = (t->cb - 1 - of) / sizeof(struct TC80);
+	return n;
 };
 
 enum BordersToApply {

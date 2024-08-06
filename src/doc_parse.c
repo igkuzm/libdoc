@@ -79,6 +79,7 @@ static void _parse_styles(cfb_doc_t *doc, void *user_data,
 				
 		if (LPStd->cbStd == 0){
 			i += 2;
+			index++;
 			continue;
 		}
 
@@ -107,6 +108,7 @@ static void _parse_styles(cfb_doc_t *doc, void *user_data,
 		} else {
 			ERR("cbSTDBaseInFile");
 			i += *cbStd + 2;
+			index++;
 			continue;
 		}
 
@@ -165,7 +167,6 @@ int doc_parse(const char *filename, void *user_data,
 	// parse styles
 	_parse_styles(&doc, user_data, styles);
 
-
 /* 2.3.1 Main Document
  * The main document contains all content outside any of 
  * the specialized document parts, including
@@ -184,6 +185,7 @@ int doc_parse(const char *filename, void *user_data,
 			last = doc.plcfSed->aCP[i+1];
 		else
 			last = doc.fib.rgLw97->ccpText;
+		
 		// apply section prop
 		direct_section_formatting(&doc, i);
 		
