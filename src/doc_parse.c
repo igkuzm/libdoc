@@ -160,7 +160,6 @@ int doc_parse(const char *filename, void *user_data,
 
 	// parse styles
 	_parse_styles(&doc, user_data, styles);
-	return 0;
 
 /* 2.3.1 Main Document
  * The main document contains all content outside any of 
