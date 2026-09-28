@@ -2,7 +2,7 @@
  * File              : doc.c
  * Author            : Igor V. Sementsov <ig.kuzm@gmail.com>
  * Date              : 26.05.2024
- * Last Modified Date: 07.08.2024
+ * Last Modified Date: 28.09.2026
  * Last Modified By  : Igor V. Sementsov <ig.kuzm@gmail.com>
  */
 
@@ -1681,7 +1681,7 @@ struct LPStd *LPStd_at_index(
 		// read cbStd
 		cbStd = *(SHORT *)&(rglpstd[i]);
 #ifdef DEBUG
-	LOG("SDT at index %d size: %d", k, *cbStd);
+	LOG("SDT at index %d size: %d", k, cbStd);
 #endif
 	if (cbStd < 0){
 		ERR("STSH corrupted, LPStd at index: %d, cbStd: %d", k, cbStd);
